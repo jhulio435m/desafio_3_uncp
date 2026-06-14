@@ -1,5 +1,5 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import { ConversationTurn } from './types';
+import { ConversationTurn, LanguageCode } from './types';
 import { setting } from './utils';
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || '';
@@ -21,11 +21,12 @@ REGLAS ESTRICTAS:
 - Solo responde sobre proyección social UNCP, necesidades comunitarias y servicios universitarios para comunidades.
 - Si preguntan sobre política, elecciones, entretenimiento, opiniones personales u otros temas no relacionados: declina con educación y recuerda cuál es tu propósito.
 - Si el mensaje es una expresión informal (xd, jajaja, ok, piola, chevere, etc.) o no tiene sentido en contexto: responde brevemente pidiendo que describa su necesidad.
-- Responde en el mismo idioma del usuario cuando sea claro: español, quechua básico o una respuesta simple de inclusión para asháninka. Si no estás seguro, responde en español claro.
-- Sé breve para WhatsApp: máximo 4 líneas, sin tablas, sin listas largas y sin lenguaje burocrático. Formato de WhatsApp: Usa *texto* para negrita (NUNCA **texto**). No uses cabeceras markdown (#, ##).
+- Respeta el IDIOMA DE SESION indicado al final de estas instrucciones. No cambies de idioma aunque el historial tenga mensajes en otro idioma. Si no hay idioma de sesión, responde en el idioma más claro del usuario; si hay duda, usa español claro.
+- Sé breve para WhatsApp: máximo 5 líneas, sin tablas, sin listas largas y sin lenguaje burocrático. Formato de WhatsApp: usa *texto* para negrita (NUNCA **texto**) y no uses cabeceras markdown (#, ##).
 - No inventes fechas, costos, nombres de personas, números de expediente, teléfonos, enlaces ni requisitos no confirmados.
 - No prometas aprobación, ejecución de proyectos ni atención inmediata. Solo orientas preliminarmente.
-- Si la consulta pide trámite formal, aclara que el canal no reemplaza ADESA, mesa de partes ni procedimientos oficiales.
+- No digas que una solicitud fue aceptada, aprobada, asignada o derivada si solo estás orientando.
+- Si la consulta pide trámite formal, aclara que el canal no reemplaza la oficina o el procedimiento oficial correspondiente, como ADESA, mesa de partes u otros canales formales cuando aplique.
 - Si la respuesta es útil, cierra con una acción concreta: escribir "menu", "5" para una persona o "2" para registrar solicitud.
 - No menciones ODS, periodos académicos, informes, pagos estudiantiles ni clasificación monovalente/polivalente salvo que el usuario lo pregunte de forma explícita.
 - No empieces nombrando facultades si primero puedes explicar el tipo de apoyo y los datos que debe preparar la persona.
@@ -59,7 +60,7 @@ La orientación debe convertir necesidades comunitarias en una ruta preliminar:
 FORMATO DE RESPUESTA:
 - Primera línea: confirma brevemente la necesidad del usuario con sus propias palabras.
 - Segunda línea: tipo de apoyo probable y, si ayuda, área probable.
-- Tercera sección: una lista corta con viñetas usando '•' detallando los datos o documentos simples que conviene tener a la mano (máximo 3 puntos).
+- Tercera sección: si hay varios datos, usa una lista corta con viñetas '•' y máximo 3 puntos; si es simple, usa una sola línea.
 - Última línea: siguiente paso concreto en el bot.
 - Si no hay suficiente información, pide una sola aclaración específica.`;
 
@@ -220,14 +221,28 @@ async function askMiniMax(userMessage: string, history: ConversationTurn[], syst
   return askOpenAiCompatible('NVIDIA', NVIDIA_BASE_URL, NVIDIA_API_KEY, NVIDIA_FALLBACK_MODEL, userMessage, history, systemPrompt);
 }
 
-export async function askAssistant(userMessage: string, history: ConversationTurn[] = []): Promise<string | null> {
+function languageInstruction(lang?: LanguageCode): string {
+  if (lang === 'qu') {
+    return '\n\nIDIOMA DE SESION: Responde en quechua/runasimi basico y claro. Si una palabra tecnica no tiene traduccion segura, conserva esa palabra en espanol.';
+  }
+  if (lang === 'ash') {
+    return '\n\nIDIOMA DE SESION: El usuario eligio Ashaninka. Responde con una formula simple e inclusiva en Ashaninka cuando sea seguro, y usa espanol muy claro para el resto. No vuelvas a espanol burocratico.';
+  }
+  return '\n\nIDIOMA DE SESION: Responde en espanol claro.';
+}
+
+export async function askAssistant(
+  userMessage: string,
+  history: ConversationTurn[] = [],
+  lang: LanguageCode = 'es',
+): Promise<string | null> {
   const aiMode = (await setting('ai_mode', 'activa')).toLowerCase().trim();
   if (['off', 'false', '0', 'no', 'desactivada', 'desactivado'].includes(aiMode)) {
     console.log('[AI] Disabled by bot_settings.ai_mode');
     return null;
   }
 
-  const systemPrompt = await setting('system_prompt', DEFAULT_SYSTEM_PROMPT);
+  const systemPrompt = `${await setting('system_prompt', DEFAULT_SYSTEM_PROMPT)}${languageInstruction(lang)}`;
   const trimmedHistory = history.slice(-6);
 
   const groqResponse = await askGroqCloud(userMessage, trimmedHistory, systemPrompt);

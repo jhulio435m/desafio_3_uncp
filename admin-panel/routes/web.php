@@ -45,6 +45,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/knowledge-categories', [BotManagementController::class, 'storeCategory'])->name('bot.categories.store');
 
     Route::get('/bot-status', [BotManagementController::class, 'getBotStatus'])->name('bot.status');
+    Route::get('/notifications', [BotManagementController::class, 'notifications'])->name('notifications.index');
     Route::post('/bot/logout', [BotManagementController::class, 'logoutBot'])->name('bot.logout');
     Route::post('/bot/restart', [BotManagementController::class, 'restartBot'])->name('bot.restart');
 

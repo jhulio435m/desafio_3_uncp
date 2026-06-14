@@ -55,7 +55,11 @@ services:
     environment:
       APP_NAME: "Orientador Proyección Social"
       APP_ENV: production
+      APP_KEY: ${ADMIN_APP_KEY:-base64:p5imiaBpF+f6ct4J+KfjvzP0xkvk1bo+QyN7UrxsuBg=}
       APP_DEBUG: "false"
+      APP_LOCALE: es
+      APP_FALLBACK_LOCALE: es
+      APP_FAKER_LOCALE: es_PE
       DB_CONNECTION: pgsql
       DB_HOST: db
       DB_PORT: 5432

@@ -50,23 +50,35 @@ export async function setting(key: string, fallback: string): Promise<string> {
 export async function loadTexts(lang: LanguageCode): Promise<BotTexts> {
   const copy = BOT_COPY[lang];
 
+  if (lang !== 'es') {
+    return copy;
+  }
+
   return {
     ...copy,
     welcome: await setting(
       'welcome_message',
-      'Hola, soy el orientador virtual para solicitudes de proyección social. Puedo ayudarte a entender qué apoyo podrías solicitar, qué datos preparar, qué canal oficial usar y cuándo pedir contacto con una persona.',
+      copy.welcome,
     ),
     fallback: await setting(
       'fallback_message',
-      'No tengo una respuesta segura para esa consulta. Puedo registrar tu pedido para que una persona te oriente sobre el proceso de proyección social.',
+      copy.fallback,
     ),
     scope: await setting(
       'scope_message',
-      'Este canal orienta sobre el proceso de proyección social. No reemplaza ADESA, mesa de partes ni los procedimientos oficiales de aprobación y ejecución.',
+      copy.scope,
     ),
     officeHours: await setting(
       'office_hours',
-      'Lunes a Viernes de 8:00 AM a 1:00 PM y de 2:00 PM a 5:00 PM.',
+      copy.officeHours,
+    ),
+    offTopicMessage: await setting(
+      'off_topic_message',
+      copy.offTopicMessage,
+    ),
+    informalMessage: await setting(
+      'informal_message',
+      copy.informalMessage,
     ),
   } as BotTexts;
 }

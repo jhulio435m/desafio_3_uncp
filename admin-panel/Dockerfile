@@ -14,7 +14,7 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 COPY . .
 RUN composer install --no-interaction --prefer-dist --optimize-autoloader
-RUN npm install && npm run build
+RUN npm install --include=optional && npm run build
 
 EXPOSE 8080
 

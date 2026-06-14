@@ -1,6 +1,6 @@
 import { Client, Message } from '@open-wa/wa-automate';
 import { LANGUAGE_PROMPT, BOT_COPY } from './constants';
-import { normalize, loadTexts, languageFromInput, formatWelcome, replyAndStore, setting } from './utils';
+import { normalize, loadTexts, languageFromInput, formatWelcome, replyAndStore } from './utils';
 import { isInformalMessage, isOffTopic } from './gemini';
 import { appendConversationMessage, getRecentConversation, getUserState, saveUserState } from './state';
 import {
@@ -34,6 +34,7 @@ export async function onMessage(client: Client, message: Message) {
 
   const normalized = normalize(text);
   const state = await getUserState(from);
+  const guardTexts = await loadTexts(state.lang || 'es');
 
   // --- Malla de Seguridad Global ---
   if (state.step === 'IDLE') {
@@ -41,10 +42,7 @@ export async function onMessage(client: Client, message: Message) {
       await replyAndStore(
         client,
         from,
-        await setting(
-          'off_topic_message',
-          `Este canal está dedicado exclusivamente a la orientación sobre proyección social de la UNCP.\n\n_Describa la necesidad de su comunidad o escriba *menu* para ver las opciones disponibles._`,
-        ),
+        guardTexts.offTopicMessage,
         message.id,
       );
       return;
@@ -54,10 +52,7 @@ export async function onMessage(client: Client, message: Message) {
       await replyAndStore(
         client,
         from,
-        await setting(
-          'informal_message',
-          '_Cuando guste, describa la necesidad de su comunidad o escriba *menu* para ver las opciones disponibles._',
-        ),
+        guardTexts.informalMessage,
         message.id,
       );
       return;
@@ -158,16 +153,16 @@ export async function onMessage(client: Client, message: Message) {
     if (state.step === 'INFO_MENU') {
       switch (normalized) {
         case '1':
-          await replyProcessServices(client, message);
+          await replyProcessServices(client, message, texts, state.lang || 'es');
           break;
         case '2':
           await replyHoursAndCost(client, message, texts);
           break;
         case '3':
-          await replyOfficialChannels(client, message);
+          await replyOfficialChannels(client, message, texts);
           break;
         case '4':
-          await replyContacts(client, message);
+          await replyContacts(client, message, texts);
           break;
         case '5':
           await replyTrackingScope(client, message, texts);
@@ -215,7 +210,7 @@ export async function onMessage(client: Client, message: Message) {
         await replyAndStore(client, from, texts.humanName, message.id);
         break;
       default:
-        await replyKnowledgeSearchOrFallback(client, message, text, texts, history);
+        await replyKnowledgeSearchOrFallback(client, message, text, texts, state.lang || 'es', history);
         state.lastIntent = 'orientation';
         break;
     }

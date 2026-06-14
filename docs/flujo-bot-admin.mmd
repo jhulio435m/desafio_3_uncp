@@ -1,0 +1,90 @@
+flowchart LR
+    %% Diagrama tipo Bizagi con carriles por actor/sistema.
+
+    subgraph U["Usuario / Representante"]
+        U0([Inicio])
+        U1["Envía mensaje por WhatsApp"]
+        U2{"¿Elige idioma?"}
+        U3["Describe necesidad comunitaria"]
+        U4["Selecciona opción del menú"]
+        U5["Envía datos de solicitud"]
+        U6["Consulta ticket"]
+        U7["Solicita hablar con una persona"]
+        U8([Recibe orientación / estado / contacto])
+    end
+
+    subgraph W["Bot WhatsApp"]
+        W1["Recibe mensaje"]
+        W2["Carga estado de conversación"]
+        W3["Detecta comando, opción o texto libre"]
+        W4["Actualiza idioma activo"]
+        W5["Muestra menú localizado"]
+        W6["Ejecuta flujo determinístico"]
+        W7["Registra solicitud"]
+        W8["Busca ticket"]
+        W9["Registra pedido de contacto humano"]
+        W10["Entrega respuesta al usuario"]
+    end
+
+    subgraph R["Reglas + IA"]
+        R1{"¿Mensaje fuera de alcance?"}
+        R2["Respuesta de límite del canal"]
+        R3{"¿Hay respuesta en base de conocimiento?"}
+        R4["Respuesta FAQ / guía configurada"]
+        R5{"¿IA activa?"}
+        R6["Construye prompt con idioma de sesión"]
+        R7["Consulta proveedor IA"]
+        R8["Formatea respuesta para WhatsApp"]
+        R9["Fallback seguro"]
+    end
+
+    subgraph DB["Base de datos PostgreSQL"]
+        D1[("bot_conversation_states")]
+        D2[("bot_settings")]
+        D3[("faqs / knowledge_categories")]
+        D4[("requests")]
+        D5[("human_contact_requests")]
+    end
+
+    subgraph A["Panel Admin Laravel"]
+        A1["Admin inicia sesión"]
+        A2["Gestiona prompt, FAQs, enlaces y contactos"]
+        A3["Revisa solicitudes"]
+        A4["Actualiza estado de solicitud"]
+        A5["Revisa contactos humanos pendientes"]
+        A6["Actualiza estado de contacto"]
+        A7["Campana de notificaciones"]
+    end
+
+    U0 --> U1 --> W1 --> W2 --> W3
+    W2 <--> D1
+    W3 --> U2
+    U2 -- "Sí" --> W4 --> D1 --> W5 --> W10 --> U8
+    U2 -- "No / ya tiene idioma" --> U4
+
+    U4 -- "menu" --> W5 --> W10 --> U8
+    U4 -- "1 Orientar necesidad" --> U3 --> R1
+    U4 -- "2 Registrar solicitud" --> U5 --> W7 --> D4 --> W10 --> U8
+    U4 -- "4 Seguimiento" --> U6 --> W8 --> D4 --> W10 --> U8
+    U4 -- "5 Persona" --> U7 --> W9 --> D5 --> W10 --> U8
+
+    U3 --> W3 --> R1
+    R1 -- "Sí" --> R2 --> W10 --> U8
+    R1 -- "No" --> R3
+    R3 -- "Sí" --> R4 --> W10 --> U8
+    R3 -- "No" --> R5
+    R5 -- "Sí" --> R6 --> D2 --> R7 --> R8 --> W10 --> U8
+    R5 -- "No" --> R9 --> W10 --> U8
+    R7 -- "Sin respuesta / error" --> R9
+    R4 <--> D3
+
+    A1 --> A2 --> D2
+    A2 --> D3
+    A3 --> D4
+    A4 --> D4
+    A5 --> D5
+    A6 --> D5
+    A7 -- "Polling cada 20 s" --> D4
+    A7 -- "Polling cada 20 s" --> D5
+    D4 -- "Solicitudes Recibido" --> A7
+    D5 -- "Contactos Pendiente" --> A7

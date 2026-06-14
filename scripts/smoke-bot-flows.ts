@@ -230,6 +230,31 @@ async function scenarioInfoSubmenu(client: FakeClient, phone: string) {
   assertReplyContains(client, 'Menú Principal', 'back to main menu');
 }
 
+async function scenarioLanguageChangePersists(client: FakeClient, quechuaPhone: string, ashaninkaPhone: string) {
+  await send(client, quechuaPhone, 'hola', 'qu-lang-prompt');
+  await send(client, quechuaPhone, '2', 'select-qu');
+  assertReplyContains(client, 'Akllana / Menú', 'quechua welcome menu');
+
+  await send(client, quechuaPhone, '3', 'qu-info-open');
+  assertReplyContains(client, 'Yanapakuq willakuy', 'quechua info menu');
+
+  await send(client, quechuaPhone, '5', 'qu-scope');
+  assertReplyContains(client, 'Kay canalqa', 'quechua scope');
+  assertNoReplyContains(client, 'Este canal orienta', 'quechua scope should not be spanish');
+
+  await send(client, quechuaPhone, 'menu', 'qu-menu');
+  assertReplyContains(client, 'Akllana / Menú', 'quechua menu persists');
+
+  await send(client, quechuaPhone, 'idioma', 'qu-reset-language');
+  await send(client, quechuaPhone, '3', 'select-ash');
+  assertReplyContains(client, 'Ñantsi de orientación', 'ashaninka welcome after language change');
+
+  await send(client, ashaninkaPhone, 'hola', 'ash-lang-prompt');
+  await send(client, ashaninkaPhone, '3', 'ash-select');
+  await send(client, ashaninkaPhone, 'menu', 'ash-menu');
+  assertReplyContains(client, 'Ñantsi de orientación', 'ashaninka menu persists');
+}
+
 async function main() {
   const client = new FakeClient();
   const villagerPhone = '51999900001@c.us';
@@ -240,16 +265,18 @@ async function main() {
   const lostPhone = '51999900006@c.us';
   const infoPhone = '51999900007@c.us';
   const studentPhone = '51999900008@c.us';
+  const quechuaPhone = '51999900009@c.us';
+  const ashaninkaPhone = '51999900010@c.us';
 
   clearStateCache();
   await getUserState(villagerPhone);
   await query(
     'DELETE FROM bot_conversation_history WHERE user_phone = ANY($1)',
-    [[villagerPhone, humanPhone, requestPhone, trackPhone, trollPhone, lostPhone, infoPhone, studentPhone]],
+    [[villagerPhone, humanPhone, requestPhone, trackPhone, trollPhone, lostPhone, infoPhone, studentPhone, quechuaPhone, ashaninkaPhone]],
   );
   await query(
     'DELETE FROM bot_conversation_states WHERE user_phone = ANY($1)',
-    [[villagerPhone, humanPhone, requestPhone, trackPhone, trollPhone, lostPhone, infoPhone, studentPhone]],
+    [[villagerPhone, humanPhone, requestPhone, trackPhone, trollPhone, lostPhone, infoPhone, studentPhone, quechuaPhone, ashaninkaPhone]],
   );
   clearStateCache();
 
@@ -275,6 +302,7 @@ async function main() {
   await scenarioStudentAndProjectIntent(client, studentPhone);
   await scenarioHumanContactValidation(client, humanPhone);
   await scenarioInfoSubmenu(client, infoPhone);
+  await scenarioLanguageChangePersists(client, quechuaPhone, ashaninkaPhone);
   const trackedTicket = await scenarioFormalRequestAndTracking(client, requestPhone, trackPhone);
 
   console.log(JSON.stringify({
@@ -286,6 +314,7 @@ async function main() {
       studentAndProject: true,
       humanValidation: true,
       infoSubmenu: true,
+      languageChangePersists: true,
       requestTracking: true,
     },
     replies: client.replies.length - startReplies,

@@ -8,9 +8,71 @@
         color: theme('colors.uncp.gray-dark');
     }
 
+    .dark body {
+        background-color: #151613;
+        color: #d6d9d2;
+    }
+
     ::selection {
         background-color: theme('colors.uncp.gold');
         color: theme('colors.uncp.black');
+    }
+}
+
+@layer utilities {
+    .dark .bg-uncp-bg,
+    .dark .bg-gray-50,
+    .dark .bg-gray-50\/60,
+    .dark .bg-white {
+        background-color: #1d1f1b;
+    }
+
+    .dark .bg-gray-100,
+    .dark .bg-gray-200 {
+        background-color: #292c25;
+    }
+
+    .dark .bg-uncp-green {
+        background-color: #003d2f;
+    }
+
+    .dark .border-gray-100,
+    .dark .border-gray-200,
+    .dark .border-gray-300,
+    .dark .border-uncp-gold\/20,
+    .dark .border-uncp-gold\/30 {
+        border-color: #3a3d35;
+    }
+
+    .dark .text-uncp-gray-dark,
+    .dark .text-gray-900,
+    .dark .text-gray-800,
+    .dark .text-gray-700 {
+        color: #f4f5f0;
+    }
+
+    .dark .text-gray-600,
+    .dark .text-gray-500,
+    .dark .text-gray-400 {
+        color: #a8ada2;
+    }
+
+    .dark .shadow-sm,
+    .dark .shadow-xl {
+        box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.35);
+    }
+
+    .dark input,
+    .dark select,
+    .dark textarea {
+        background-color: #151613;
+        border-color: #3a3d35;
+        color: #f4f5f0;
+    }
+
+    .dark input::placeholder,
+    .dark textarea::placeholder {
+        color: #858b7e;
     }
 }
 

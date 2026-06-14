@@ -12,6 +12,16 @@
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
 
+        <script>
+            (() => {
+                const storedTheme = localStorage.getItem('admin-theme');
+                const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                if (storedTheme === 'dark' || (!storedTheme && prefersDark)) {
+                    document.documentElement.classList.add('dark');
+                }
+            })();
+        </script>
+
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
@@ -182,6 +192,82 @@
                                 {{ $header }}
                             </div>
                         @endisset
+
+                        <div class="ml-auto flex shrink-0 items-center gap-2">
+                            <button
+                                type="button"
+                                class="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-600 shadow-sm transition hover:bg-gray-50"
+                                @click="$store.theme.toggle()"
+                                :title="$store.theme.dark ? 'Usar modo claro' : 'Usar modo oscuro'"
+                                :aria-label="$store.theme.dark ? 'Usar modo claro' : 'Usar modo oscuro'"
+                            >
+                                <i x-show="!$store.theme.dark" data-lucide="moon" class="h-4 w-4"></i>
+                                <i x-show="$store.theme.dark" data-lucide="sun" class="h-4 w-4"></i>
+                            </button>
+
+                            <div class="relative" x-data="notificationsPanel('{{ route('notifications.index') }}')" @click.outside="close()">
+                                <button
+                                    type="button"
+                                    class="relative inline-flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-600 shadow-sm transition hover:bg-gray-50"
+                                    title="Notificaciones"
+                                    aria-label="Notificaciones"
+                                    @click="open = !open"
+                                >
+                                    <i data-lucide="bell" class="h-4 w-4"></i>
+                                    <span
+                                        x-cloak
+                                        x-show="count > 0"
+                                        class="absolute -right-1 -top-1 min-w-5 rounded-full bg-uncp-gold-web px-1.5 py-0.5 text-[10px] font-bold leading-none text-black ring-2 ring-white dark:ring-gray-900"
+                                        x-text="count > 9 ? '9+' : count"
+                                    ></span>
+                                </button>
+
+                                <div
+                                    x-cloak
+                                    x-show="open"
+                                    x-transition
+                                    class="absolute right-0 mt-2 w-80 max-w-[calc(100vw-2rem)] overflow-hidden rounded-lg border border-gray-200 bg-white shadow-xl"
+                                >
+                                    <div class="flex items-center justify-between border-b border-gray-200 px-4 py-3">
+                                        <div>
+                                            <p class="text-sm font-semibold text-gray-900">Notificaciones</p>
+                                            <p class="text-xs text-gray-500">
+                                                <span x-show="updatedAt">Actualizado <span x-text="updatedAt"></span></span>
+                                                <span x-show="!updatedAt">Actividad reciente del panel</span>
+                                            </p>
+                                        </div>
+                                        <button type="button" class="rounded-md p-1 text-gray-500 hover:bg-gray-50 hover:text-gray-700" @click="close()" aria-label="Cerrar notificaciones">
+                                            <i data-lucide="x" class="h-4 w-4"></i>
+                                        </button>
+                                    </div>
+                                    <div class="divide-y divide-gray-100">
+                                        <template x-if="loading">
+                                            <div class="px-4 py-5 text-sm text-gray-500">Cargando notificaciones...</div>
+                                        </template>
+
+                                        <template x-if="!loading && items.length === 0">
+                                            <div class="px-4 py-5 text-sm text-gray-500">No hay solicitudes ni contactos pendientes.</div>
+                                        </template>
+
+                                        <template x-for="item in items" :key="item.id">
+                                            <a :href="item.url" class="block px-4 py-3 transition hover:bg-gray-50">
+                                                <div class="flex items-start gap-3">
+                                                    <span
+                                                        class="mt-1 h-2 w-2 shrink-0 rounded-full"
+                                                        :class="item.type === 'request' ? 'bg-uncp-gold-web' : 'bg-amber-500'"
+                                                    ></span>
+                                                    <div class="min-w-0">
+                                                        <p class="truncate text-sm font-medium text-gray-900" x-text="item.title"></p>
+                                                        <p class="mt-0.5 truncate text-xs text-gray-500" x-text="item.description"></p>
+                                                        <p class="mt-1 text-[11px] font-medium text-gray-500" x-text="item.time"></p>
+                                                    </div>
+                                                </div>
+                                            </a>
+                                        </template>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </header>
 

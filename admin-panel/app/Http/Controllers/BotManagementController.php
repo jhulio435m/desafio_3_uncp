@@ -10,6 +10,7 @@ use App\Models\Faq;
 use App\Models\HumanContactRequest;
 use App\Models\KnowledgeCategory;
 use App\Models\OfficialLink;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
@@ -325,7 +326,55 @@ class BotManagementController extends Controller
         return ['Pendiente', 'En Contacto', 'Derivado a Trámite', 'Resuelto', 'Inubicable'];
     }
 
-    public function getBotStatus(): \Illuminate\Http\JsonResponse
+    public function notifications(): JsonResponse
+    {
+        $pendingRequests = BotRequest::query()
+            ->where('status', 'Recibido')
+            ->latest()
+            ->take(5)
+            ->get()
+            ->map(fn (BotRequest $request) => [
+                'id' => 'request-'.$request->id,
+                'type' => 'request',
+                'title' => 'Nueva solicitud formal',
+                'description' => trim("{$request->ticket_id} · {$request->institution_name}"),
+                'status' => $request->status,
+                'time' => optional($request->created_at)->diffForHumans(),
+                'created_at' => optional($request->created_at)->toIso8601String(),
+                'url' => route('requests.show', $request),
+            ]);
+
+        $pendingContacts = HumanContactRequest::query()
+            ->where('status', 'Pendiente')
+            ->latest()
+            ->take(5)
+            ->get()
+            ->map(fn (HumanContactRequest $request) => [
+                'id' => 'contact-'.$request->id,
+                'type' => 'contact',
+                'title' => 'Contacto humano pendiente',
+                'description' => trim(($request->citizen_name ?: 'Ciudadano sin nombre').' · '.($request->topic ?: 'Consulta general')),
+                'status' => $request->status,
+                'time' => optional($request->created_at)->diffForHumans(),
+                'created_at' => optional($request->created_at)->toIso8601String(),
+                'url' => route('bot.human-contacts', ['status' => 'Pendiente']),
+            ]);
+
+        $items = $pendingRequests
+            ->concat($pendingContacts)
+            ->sortByDesc(fn (array $item) => $item['created_at'])
+            ->values()
+            ->take(8);
+
+        return response()->json([
+            'count' => BotRequest::where('status', 'Recibido')->count()
+                + HumanContactRequest::where('status', 'Pendiente')->count(),
+            'items' => $items,
+            'updated_at' => now()->format('H:i'),
+        ]);
+    }
+
+    public function getBotStatus(): JsonResponse
     {
         try {
             $response = Http::timeout(3)->get('http://app:3000/status');

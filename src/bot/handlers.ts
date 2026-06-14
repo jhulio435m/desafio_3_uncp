@@ -5,6 +5,7 @@ import { query } from '../database/db';
 import { BotTexts, ConversationTurn, LanguageCode, UserState } from './types';
 import { meaningfulTokens, normalize, tokenize, isAnyHumanAvailableNow, replyAndStore, setting } from './utils';
 import { askAssistant, formatAiReply } from './gemini';
+import { BOT_COPY } from './constants';
 
 type FaqRow = {
   question: string;
@@ -63,7 +64,12 @@ export async function findFaq(text: string): Promise<FaqRow | null> {
   return best.faq;
 }
 
-export async function replyProcessServices(client: Client, message: Message) {
+export async function replyProcessServices(client: Client, message: Message, texts: BotTexts, lang: LanguageCode) {
+  if (lang !== 'es') {
+    await replyAndStore(client, message.from, texts.processServices, message.id);
+    return;
+  }
+
   const result = await query(`
     SELECT answer FROM faqs
     WHERE is_active = true
@@ -76,12 +82,7 @@ export async function replyProcessServices(client: Client, message: Message) {
     const response = `*Tipos de apoyo disponibles*\n\n${result.rows[0].answer}\n\n_Escriba *2* para orientar su necesidad específica._`;
     await replyAndStore(client, message.from, response, message.id);
   } else {
-    await replyAndStore(
-      client,
-      message.from,
-      '*Tipos de apoyo disponibles*\n\n- Capacitación (talleres y cursos)\n- Asesoría técnica\n- Campañas sociales\n- Apoyo productivo\n\n_Escriba *2* para orientar su necesidad específica._',
-      message.id,
-    );
+    await replyAndStore(client, message.from, texts.processServices, message.id);
   }
 }
 
@@ -93,7 +94,7 @@ export async function replyNeedOrientation(
   history: ConversationTurn[] = [],
 ) {
   // Try Grok/Gemini first for intelligent contextual routing
-  const aiResponse = await askAssistant(text, history);
+  const aiResponse = await askAssistant(text, history, lang);
   if (aiResponse) {
     console.log('[AI] Responded to orientation query');
     await replyAndStore(client, message.from, formatAiReply(aiResponse), message.id);
@@ -107,7 +108,7 @@ export async function replyNeedOrientation(
       await replyAndStore(
         client,
         message.from,
-        'Por favor describa la necesidad con más detalle.\n\n_Ej: "Queremos mejorar la crianza de cuyes" o "Necesitamos apoyo para el agua"_',
+        BOT_COPY[lang].needMoreDetail,
         message.id,
       );
       return;
@@ -117,9 +118,14 @@ export async function replyNeedOrientation(
     await replyAndStore(
       client,
       message.from,
-      `No encontré orientación específica para eso.\n\n_Intente con más detalle, por ejemplo: "Queremos vender queso" o "Nuestro ganado necesita ayuda"._\n\nO escriba *5* para hablar directamente con una persona.`,
+      BOT_COPY[lang].noSpecificOrientation,
       message.id,
     );
+    return;
+  }
+
+  if (lang !== 'es') {
+    await replyAndStore(client, message.from, BOT_COPY[lang].noSpecificOrientation, message.id);
     return;
   }
 
@@ -131,15 +137,15 @@ export async function replyNeedOrientation(
   );
 }
 
-export async function replyOfficialChannels(client: Client, message: Message) {
+export async function replyOfficialChannels(client: Client, message: Message, texts: BotTexts) {
   const result = await query('SELECT title, url FROM official_links WHERE is_active = true ORDER BY id');
-  let response = '*Canales oficiales*\n';
+  let response = `${texts.officialChannelsTitle}\n`;
 
   result.rows.forEach((link: any) => {
     response += `\n- *${link.title}*\n  ${link.url}`;
   });
 
-  response += '\n\n_Escriba *menu* para volver._';
+  response += `\n\n${texts.backToMenu}`;
   await replyAndStore(client, message.from, response, message.id);
 }
 
@@ -155,15 +161,15 @@ export async function replyTrackingScope(client: Client, message: Message, texts
   await replyAndStore(client, message.from, texts.scope, message.id);
 }
 
-export async function replyContacts(client: Client, message: Message) {
+export async function replyContacts(client: Client, message: Message, texts: BotTexts) {
   const result = await query('SELECT name, phone FROM contacts WHERE is_active = true ORDER BY office');
-  let response = '*Contactos de orientación*\n';
+  let response = `${texts.contactsTitle}\n`;
 
   result.rows.forEach((c: any) => {
     response += `\n- ${c.name}: *${c.phone || '-'}*`;
   });
 
-  response += '\n\n_Si desea que una persona le contacte, escriba *menu* y luego *5*._';
+  response += `\n\n${texts.humanContactHint}`;
   await replyAndStore(client, message.from, response, message.id);
 }
 
@@ -215,12 +221,13 @@ export async function replyKnowledgeSearchOrFallback(
   message: Message,
   text: string,
   texts: BotTexts,
+  lang: LanguageCode,
   history: ConversationTurn[] = [],
 ) {
   // Ignoramos findFaq a pedido del usuario para usar directamente la IA
   // y tener mejor contexto conversacional.
 
-  const aiResponse = await askAssistant(text, history);
+  const aiResponse = await askAssistant(text, history, lang);
   if (aiResponse) {
     console.log('[AI] Responded to free-text query');
     await replyAndStore(client, message.from, formatAiReply(aiResponse), message.id);
@@ -229,7 +236,7 @@ export async function replyKnowledgeSearchOrFallback(
 
   // Fallback determinista si la IA falla o no hay API key
   const faq = await findFaq(text);
-  if (faq) {
+  if (faq && lang === 'es') {
     await replyAndStore(client, message.from, faq.answer, message.id);
     return;
   }
@@ -238,7 +245,7 @@ export async function replyKnowledgeSearchOrFallback(
   await replyAndStore(
     client,
     message.from,
-    `No tengo información sobre eso.\n\nEscriba *menu* para ver opciones o *5* para hablar con una persona.`,
+    texts.noInformation,
     message.id,
   );
 }
@@ -255,7 +262,7 @@ export async function handleHumanContactFlow(client: Client, message: Message, s
   switch (state.step) {
     case 'HUMAN_NAME':
       if (text.toLowerCase() !== 'sin nombre' && !hasEnoughLetters(text, 4)) {
-        await replyAndStore(client, from, 'Indique un nombre válido o escriba "sin nombre".', message.id);
+        await replyAndStore(client, from, texts.invalidName, message.id);
         break;
       }
       state.data.citizen_name = text.toLowerCase() === 'sin nombre' ? '' : text;
@@ -264,7 +271,7 @@ export async function handleHumanContactFlow(client: Client, message: Message, s
       break;
     case 'HUMAN_PHONE':
       if (!/^\+?\d[\d\s-]{6,}$/.test(text)) {
-        await replyAndStore(client, from, 'Indique un teléfono o WhatsApp válido.', message.id);
+        await replyAndStore(client, from, texts.invalidPhone, message.id);
         break;
       }
       state.data.phone = text;
@@ -273,7 +280,7 @@ export async function handleHumanContactFlow(client: Client, message: Message, s
       break;
     case 'HUMAN_TOPIC':
       if (!hasEnoughLetters(text, 4)) {
-        await replyAndStore(client, from, 'Indique un tema entendible de proyección social.', message.id);
+        await replyAndStore(client, from, texts.invalidTopic, message.id);
         break;
       }
       state.data.topic = text;
@@ -282,7 +289,7 @@ export async function handleHumanContactFlow(client: Client, message: Message, s
       break;
     case 'HUMAN_MESSAGE':
       if (tokenize(text).length < 2) {
-        await replyAndStore(client, from, 'Describa un poco más la orientación que necesita.', message.id);
+        await replyAndStore(client, from, texts.invalidMessage, message.id);
         break;
       }
       state.data.message = text;
@@ -394,7 +401,7 @@ export async function handleTrackingFlow(client: Client, message: Message, state
       const result = (await response.json()) as any;
       if (result.success) {
         const data = result.data;
-        const msg = `*Estado de tu solicitud*\n\nTicket: \`\`\`${data.ticket_id}\`\`\`\nInstitución: ${data.institution_name}\nEstado: *${data.status}*\nFecha: ${new Date(data.created_at).toLocaleDateString('es-PE')}`;
+        const msg = `${texts.trackingStatusTitle}\n\nTicket: \`\`\`${data.ticket_id}\`\`\`\n${texts.trackingInstitution}: ${data.institution_name}\n${texts.trackingStatus}: *${data.status}*\n${texts.trackingDate}: ${new Date(data.created_at).toLocaleDateString('es-PE')}`;
         await replyAndStore(client, from, msg, message.id);
       } else {
         await replyAndStore(client, from, texts.trackNotFound, message.id);

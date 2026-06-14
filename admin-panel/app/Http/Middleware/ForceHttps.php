@@ -9,9 +9,9 @@ use Symfony\Component\HttpFoundation\Response;
 
 class ForceHttps
 {
-    public function handle(Request \$request, Closure \$next): Response
+    public function handle(Request $request, Closure $next): Response
     {
         URL::forceScheme('https');
-        return \$next(\$request);
+        return $next($request);
     }
 }
