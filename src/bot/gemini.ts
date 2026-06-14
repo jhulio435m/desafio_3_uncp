@@ -154,6 +154,25 @@ function pickFallbackBullets(text: string): string[] {
   return bullets.slice(0, 3).map((item) => truncateLine(item));
 }
 
+function extractSection(text: string, startLabel: RegExp, endLabel?: RegExp): string {
+  const startMatch = text.match(startLabel);
+  if (!startMatch || startMatch.index === undefined) return '';
+
+  const startIndex = startMatch.index + startMatch[0].length;
+  const remaining = text.slice(startIndex);
+  if (!endLabel) return remaining.trim();
+
+  const endMatch = remaining.match(endLabel);
+  return (endMatch?.index !== undefined ? remaining.slice(0, endMatch.index) : remaining).trim();
+}
+
+function splitLooseBullets(text: string): string[] {
+  return text
+    .split(/\n+|(?:\s+[-•*]\s+)|;\s+/)
+    .map((part) => part.replace(/^(?:[-*•]|\d+[.)])\s+/, '').replace(/[;.,\s]+$/g, '').trim())
+    .filter(Boolean);
+}
+
 function buildConversationPrompt(userMessage: string, history: ConversationTurn[]): string {
   if (history.length === 0) return userMessage;
 
@@ -367,22 +386,31 @@ export async function askAssistant(
 
 export function formatAiReply(text: string, aiFooter: string = 'Esta orientación es referencial y no reemplaza la evaluación oficial de la UNCP.'): string {
   const normalized = cleanAiBody(text);
-  const paragraphs = normalized
+  const dataSection = extractSection(normalized, /datos a preparar\s*:/i, /siguiente paso\s*:/i);
+  const nextSection = extractSection(normalized, /siguiente paso\s*:/i);
+  const introSection = normalized
+    .split(/datos a preparar\s*:/i)[0]
+    .split(/siguiente paso\s*:/i)[0]
+    .trim();
+
+  const paragraphs = introSection
     .split(/\n{2,}/)
     .map((part) => part.trim())
     .filter(Boolean);
 
   const explicitBullets = extractBulletLines(text).map((line) => truncateLine(line));
-  const sentencePool = splitSentences(normalized).map((line) => truncateLine(line));
+  const sentencePool = splitSentences(introSection || normalized).map((line) => truncateLine(line));
 
-  const intro = truncateLine(paragraphs[0] || sentencePool[0] || normalized || 'Entiendo su necesidad.');
+  const intro = truncateLine(sentencePool[0] || paragraphs[0] || normalized || 'Entiendo su necesidad.');
   const support = truncateLine(
     sentencePool[1]
       || paragraphs[1]
+      || sentencePool.slice(2).find((line) => /apoyo|asesor|capacit|orient|área|area/i.test(line))
       || 'Orientación general sobre proyección social.',
   );
 
   const detailCandidates = [
+    ...splitLooseBullets(dataSection).map((line) => truncateLine(line)),
     ...explicitBullets,
     ...sentencePool.slice(2),
     ...paragraphs.slice(2).map((part) => truncateLine(part)),
@@ -393,7 +421,12 @@ export function formatAiReply(text: string, aiFooter: string = 'Esta orientació
   const detailBullets = (detailCandidates.length > 0 ? detailCandidates : pickFallbackBullets(normalized)).slice(0, 3);
 
   const nextStep =
-    sentencePool.find((line) => /menu|opción\s*2|opción\s*5|registr/i.test(line))
+    truncateLine(
+      splitSentences(nextSection || normalized).find((line) => /menu|opción\s*2|opción\s*5|registr/i.test(line))
+      || nextSection
+      || sentencePool.find((line) => /menu|opción\s*2|opción\s*5|registr/i.test(line))
+      || '',
+    )
     || 'Escriba *2* para registrar o *5* para hablar con una persona.';
 
   return [
