@@ -1,0 +1,40 @@
+# Dependencies
+node_modules/
+admin-panel/node_modules/
+admin-panel/vendor/
+
+# Build outputs
+dist/
+admin-panel/public/build/
+admin-panel/public/hot/
+admin-panel/public/storage
+admin-panel/storage/*.key
+admin-panel/storage/pail
+
+# Environment files
+.env
+.env.*
+!.env.example
+admin-panel/.env
+admin-panel/.env.*
+
+# Project specific
+documentos/
+.node-persist/
+_IGNORE_*/
+dashboard_logs.txt
+bot-qr.png
+*.log
+
+# IDEs
+.vscode/
+.idea/
+.cursor/
+
+# OS files
+.DS_Store
+Thumbs.db
+*~
+*.tmp
+.~lock.*#
+.swp

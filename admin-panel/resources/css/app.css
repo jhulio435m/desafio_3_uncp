@@ -1,0 +1,19 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+    body {
+        background-color: theme('colors.uncp.bg');
+        color: theme('colors.uncp.gray-dark');
+    }
+
+    ::selection {
+        background-color: theme('colors.uncp.gold');
+        color: theme('colors.uncp.black');
+    }
+}
+
+[x-cloak] {
+    display: none !important;
+}

@@ -1,0 +1,83 @@
+services:
+  db:
+    image: postgres:15
+    container_name: uncp-bot-db
+    restart: always
+    environment:
+      POSTGRES_USER: uncp_user
+      POSTGRES_PASSWORD: uncp_password
+      POSTGRES_DB: uncp_proyeccion_social
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5439:5432"
+
+  app:
+    build: .
+    container_name: uncp-bot-app
+    restart: always
+    init: true
+    ports:
+      - "3000:3000"
+      - "3001:3001"
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USER: uncp_user
+      DB_PASSWORD: uncp_password
+      DB_NAME: uncp_proyeccion_social
+      NODE_ENV: development
+      CHROME_VERSION: 149.0.7827.102
+      XAI_API_KEY: ${XAI_API_KEY:-}
+      XAI_MODEL: ${XAI_MODEL:-grok-4-latest}
+      GROQ_API_KEY: ${GROQ_API_KEY:-}
+      GROQ_MODEL: ${GROQ_MODEL:-llama-3.3-70b-versatile}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      NVIDIA_API_KEY: ${NVIDIA_API_KEY:-}
+      NVIDIA_BASE_URL: ${NVIDIA_BASE_URL:-}
+      NVIDIA_MODEL: ${NVIDIA_MODEL:-}
+      NVIDIA_FALLBACK_MODEL: ${NVIDIA_FALLBACK_MODEL:-}
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+      - bot_sessions:/sessions
+    depends_on:
+      - db
+
+  admin:
+    build:
+      context: ./admin-panel
+    container_name: uncp-laravel-admin
+    restart: always
+    ports:
+      - "8080:8080"
+    environment:
+      APP_NAME: "Orientador Proyección Social"
+      APP_ENV: local
+      APP_DEBUG: "true"
+      APP_URL: http://localhost:8080
+      DB_CONNECTION: pgsql
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_DATABASE: uncp_proyeccion_social
+      DB_USERNAME: uncp_user
+      DB_PASSWORD: uncp_password
+    volumes:
+      - ./admin-panel:/var/www/html
+      - /var/www/html/vendor
+    depends_on:
+      - db
+    command: >
+      sh -c "echo 'Esperando que la base de datos este lista...' &&
+             until php -r \"try { new PDO('pgsql:host=db;port=5432;dbname=uncp_proyeccion_social', 'uncp_user', 'uncp_password'); exit(0); } catch (PDOException) { exit(1); }\"; do sleep 1; done &&
+             echo 'Base de datos lista! Ejecutando migraciones y seeders...' &&
+             rm -f bootstrap/cache/*.php &&
+             php artisan package:discover --ansi &&
+             php artisan migrate --force &&
+             php artisan db:seed --force &&
+             php artisan serve --host=0.0.0.0 --port=8080"
+
+volumes:
+  postgres_data:
+  bot_sessions:
