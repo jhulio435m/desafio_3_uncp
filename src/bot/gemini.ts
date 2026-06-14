@@ -14,6 +14,14 @@ const NVIDIA_BASE_URL = (process.env.NVIDIA_BASE_URL || 'https://integrate.api.n
 const NVIDIA_MODEL = process.env.NVIDIA_MODEL || 'moonshotai/kimi-k2.6';
 const NVIDIA_FALLBACK_MODEL = process.env.NVIDIA_FALLBACK_MODEL || 'minimaxai/minimax-m3';
 
+const REAL_FACULTY_HINTS = [
+  'Agronomía, Zootecnia, Industrias Alimentarias y Ingeniería Forestal y del Ambiente para cultivos, suelos, plagas, riego, ganado, pastos, inocuidad, reforestación y recursos naturales.',
+  'Medicina Humana, Enfermería y Trabajo Social para salud comunitaria, prevención, cuidado y vulnerabilidad social.',
+  'Educación, Comunicación, Antropología y Sociología para colegios, alfabetización, identidad, organización social y difusión.',
+  'Ingeniería Civil, Arquitectura, Sistemas, Ingeniería Eléctrica y Electrónica, Ingeniería Mecánica, Ingeniería Química, Ingeniería de Minas e Ingeniería Metalúrgica para agua, saneamiento, infraestructura, digitalización, energía e industria.',
+  'Administración, Economía, Contabilidad y Turismo para gestión, emprendimientos, costos, MYPEs y organización económica.',
+] as const;
+
 const DEFAULT_SYSTEM_PROMPT = `Eres YanapayBot, el asistente virtual de Proyección Social de la UNCP (Universidad Nacional del Centro del Perú).
 Tu único rol es orientar a representantes de comunidades campesinas, comunidades urbanas, organizaciones sociales y gobiernos locales sobre cómo solicitar servicios de proyección social universitaria.
 
@@ -50,12 +58,27 @@ La orientación debe convertir necesidades comunitarias en una ruta preliminar:
 - Termina con el siguiente paso dentro del bot: opción 2 para registrar o opción 5 si necesita una persona.
 
 ÁREAS DE REFERENCIA:
-- Ciencias Agrarias: Agronomía (cultivos, plagas, suelos, riego), Zootecnia (ganado, cuyes, pastos, sanidad pecuaria), Industrias Alimentarias (procesamiento, conservas, inocuidad), Ciencias Forestales y del Ambiente (reforestación, recursos naturales, impacto ambiental). Incluye facultades en Satipo y Tarma.
-- Ciencias de la Salud: Medicina Humana (campañas médicas, prevención), Enfermería (cuidado, higiene, salud comunitaria).
-- Ciencias de la Ingeniería: Ingeniería Civil (agua, saneamiento, infraestructura), Arquitectura (planificación urbana, espacios comunales), Sistemas (digitalización, software, datos), Eléctrica y Electrónica, Mecánica, Química, Minas, Metalúrgica.
-- Ciencias Sociales: Sociología (organización social, conflictos), Antropología (identidad, comunidades), Trabajo Social (vulnerabilidad, apoyo familiar), Comunicación (difusión, talleres).
-- Ciencias Económicas: Administración y Contabilidad (emprendimientos, gestión, MYPEs), Economía (proyectos productivos, costos). Incluye sedes como Turismo Tarma.
-- Ciencias de la Educación: Educación (colegios, alfabetización, pedagogía).
+- ODS 2 / producción y alimentos: Agronomía, Zootecnia, Industrias Alimentarias, Agronomía Tropical Satipo, Zootecnia Tropical Satipo, Agroindustria Junín, Agroindustria Tarma, Alimentarias Tropical Satipo.
+- ODS 3 / salud y bienestar: Medicina, Enfermería, Trabajo Social.
+- ODS 4 / educación y comunidad: Educación, Comunicación, Antropología, Sociología.
+- ODS 6 / agua e infraestructura: Ingeniería Química, Ingeniería Civil, Ingeniería de Minas, Ingeniería Metalúrgica.
+- ODS 7 / energía y sistemas: Ingeniería Eléctrica y Electrónica, Ingeniería Mecánica, Sistemas.
+- ODS 8 / gestión y economía: Administración, Economía, Contabilidad, Turismo Tarma, Sistemas, Administración de Negocios Tarma.
+- ODS 9 / infraestructura e innovación: Sistemas, Arquitectura, Ingeniería Civil, Agroindustria Junín.
+- ODS 11 / territorio y comunidad: Ingeniería Forestal y del Ambiente, Ingeniería Forestal Tropical Satipo, Sociología, Antropología, Turismo, Arquitectura, Sistemas.
+- ODS 13 / clima y suelos: Ingeniería Forestal y del Ambiente, Ingeniería Forestal Tropical Satipo, Agronomía, Agronomía Tropical Satipo, Ingeniería Metalúrgica.
+- ODS 14 / agua y biodiversidad: Zootecnia, Zootecnia Tropical Satipo, Ingeniería Química.
+- ODS 15 / ecosistemas: Ingeniería Forestal y del Ambiente, Ingeniería Forestal Tropical Satipo, Comunicación, Turismo.
+- ODS 16 / convivencia e instituciones: Sociología, Antropología, Trabajo Social, Comunicación.
+
+REGLAS DE GROUNDING:
+- No uses etiquetas genéricas como "Ciencias Agrarias" en la respuesta final si puedes nombrar la facultad o escuela concreta.
+- Si el caso es agrícola, prioriza Agronomía, Zootecnia, Industrias Alimentarias o Ingeniería Forestal y del Ambiente según el problema.
+- Si el caso es de salud, prioriza Medicina, Enfermería o Trabajo Social.
+- Si el caso es social o comunitario, prioriza Sociología, Antropología, Trabajo Social o Comunicación.
+- Si el caso es de infraestructura o tecnología, prioriza Ingeniería Civil, Arquitectura, Sistemas o Ingeniería Eléctrica y Electrónica.
+- Si el caso es económico o productivo, prioriza Administración, Economía, Contabilidad o Turismo.
+- Si el caso requiere una sede específica, menciona Satipo o Tarma solo cuando exista relación clara.
 
 FORMATO DE RESPUESTA:
 - Responde EXACTAMENTE con esta estructura y en este orden:
@@ -82,9 +105,15 @@ function cleanHistoryTurn(body: string): string {
 }
 
 function cleanAiBody(body: string): string {
-  return body
+  const stripped = body
     .replace(/>\s*(Contenido generado con IA|Esta orientación es referencial.*)\.?/gi, '')
-    .replace(/\s+/g, ' ')
+    .replace(/\r/g, '');
+
+  return stripped
+    .split('\n')
+    .map((line) => line.replace(/[ \t]+$/g, '').replace(/\s{2,}/g, ' ').trim())
+    .join('\n')
+    .replace(/\n{3,}/g, '\n\n')
     .trim();
 }
 
@@ -136,6 +165,17 @@ function buildConversationPrompt(userMessage: string, history: ConversationTurn[
     .join('\n');
 
   return `Historial reciente:\n${transcript}\n\nMensaje actual del usuario: ${userMessage}`;
+}
+
+function buildGroundingPrompt(basePrompt: string): string {
+  return [
+    basePrompt.trim(),
+    '',
+    'CONTEXTO REAL DE LA UNCP PARA APOYO DE RESPUESTA:',
+    ...REAL_FACULTY_HINTS.map((hint) => `- ${hint}`),
+    '',
+    'RECUERDA: el texto final debe sonar útil, concreto y con facultades reales. No digas "Ciencias Agrarias" si puedes ser más preciso.',
+  ].join('\n');
 }
 
 export async function askGemini(userMessage: string, history: ConversationTurn[] = [], systemPrompt: string = DEFAULT_SYSTEM_PROMPT): Promise<string | null> {
@@ -289,7 +329,7 @@ export async function askAssistant(
     return null;
   }
 
-  const systemPrompt = `${await setting('system_prompt', DEFAULT_SYSTEM_PROMPT)}${languageInstruction(lang)}`;
+  const systemPrompt = buildGroundingPrompt(`${await setting('system_prompt', DEFAULT_SYSTEM_PROMPT)}${languageInstruction(lang)}`);
   const trimmedHistory = history.slice(-6);
 
   const groqResponse = await askGroqCloud(userMessage, trimmedHistory, systemPrompt);
@@ -359,9 +399,12 @@ export function formatAiReply(text: string, aiFooter: string = 'Esta orientació
   return [
     intro,
     `*Apoyo probable:* ${support}`,
+    '',
     '*Datos a preparar:*',
     ...detailBullets.map((item) => `• ${item}`),
+    '',
     `*Siguiente paso:* ${nextStep}`,
+    '',
     `> ${aiFooter}`,
   ].join('\n');
 }
