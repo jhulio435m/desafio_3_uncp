@@ -4,6 +4,11 @@ use App\Http\Controllers\BotManagementController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RequestManagementController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\URL;
+
+if (env('APP_ENV') !== 'local') {
+    URL::forceScheme('https');
+}
 
 Route::get('/', function () {
     return auth()->check()
