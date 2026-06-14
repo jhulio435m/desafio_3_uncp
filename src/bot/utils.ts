@@ -3,7 +3,6 @@ import * as fs from 'fs';
 import { Client } from '@open-wa/wa-automate';
 import { query } from '../database/db';
 import { LanguageCode, BotTexts } from './types';
-import { BOT_COPY } from './constants';
 import { appendConversationMessage } from './state';
 
 const STOPWORDS = new Set([
@@ -48,30 +47,45 @@ export async function setting(key: string, fallback: string): Promise<string> {
 }
 
 export async function loadTexts(lang: LanguageCode): Promise<BotTexts> {
-  const fallbackCopy = { ...BOT_COPY[lang] };
-
   try {
-    const result = await query(
-      `SELECT bk.key, bt.value 
-       FROM bot_translations bt
-       JOIN bot_translation_keys bk ON bk.id = bt.bot_translation_key_id
-       WHERE bt.lang = $1`,
-      [lang]
-    );
+    const [fallbackResult, langResult] = await Promise.all([
+      query(
+        `SELECT bk.key, bt.value 
+         FROM bot_translations bt
+         JOIN bot_translation_keys bk ON bk.id = bt.bot_translation_key_id
+         WHERE bt.lang = 'es'`,
+      ),
+      lang === 'es'
+        ? Promise.resolve(null)
+        : query(
+            `SELECT bk.key, bt.value 
+             FROM bot_translations bt
+             JOIN bot_translation_keys bk ON bk.id = bt.bot_translation_key_id
+             WHERE bt.lang = $1`,
+            [lang]
+          ),
+    ]);
 
-    const dbCopy: Record<string, string> = {};
-    for (const row of result.rows) {
-      dbCopy[row.key] = row.value;
+    const copy: Record<string, string> = {};
+    for (const row of fallbackResult.rows) {
+      copy[row.key] = row.value;
     }
 
-    return {
-      ...fallbackCopy,
-      ...dbCopy,
-    } as BotTexts;
+    if (langResult) {
+      for (const row of langResult.rows) {
+        copy[row.key] = row.value;
+      }
+    }
+
+    return copy as unknown as BotTexts;
   } catch (error) {
     console.error(`[BOT] Error loading translations for lang ${lang} from DB:`, error);
-    return fallbackCopy;
+    return {} as unknown as BotTexts;
   }
+}
+
+export async function loadLanguagePrompt(): Promise<string> {
+  return setting('language_prompt', '');
 }
 
 export function languageFromInput(input: string): LanguageCode | null {
@@ -82,12 +96,8 @@ export function languageFromInput(input: string): LanguageCode | null {
   return null;
 }
 
-export function formatWelcome(texts: BotTexts, lang: LanguageCode): string {
-  let welcome = `*Orientador de Proyección Social UNCP*\n\n${texts.welcome}\n\n${texts.menu}`;
-  if (lang === 'qu') {
-    welcome = `*Proyección Social UNCP Yanapakuq*\n\n${texts.welcome}\n\n${texts.menu}`;
-  }
-  return welcome;
+export function formatWelcome(texts: BotTexts): string {
+  return `${texts.welcome}\n\n${texts.menu}`;
 }
 
 export function normalize(text: string): string {
@@ -109,9 +119,10 @@ export function meaningfulTokens(text: string): string[] {
 }
 
 export async function replyAndStore(client: Client, to: any, body: string, id?: string): Promise<void> {
+  const messageBody = body || 'Lo siento, no pude procesar su mensaje en este momento. Escriba *menu* para reiniciar.';
   try {
     await (client as any).simulateTyping(to, true);
-    const delay = Math.min(Math.max(body.length * 25, 1000), 4000);
+    const delay = Math.min(Math.max(messageBody.length * 25, 1000), 4000);
     await new Promise((resolve) => setTimeout(resolve, delay));
   } catch (err) {
     console.warn('[BOT] simulateTyping failed:', err);
@@ -120,8 +131,8 @@ export async function replyAndStore(client: Client, to: any, body: string, id?: 
       await (client as any).simulateTyping(to, false);
     } catch (_) {}
   }
-  await (client as any).reply(to, body, id);
-  await appendConversationMessage(to, 'assistant', body);
+  await (client as any).reply(to, messageBody, id);
+  await appendConversationMessage(to, 'assistant', messageBody);
 }
 
 export async function isAnyHumanAvailableNow(): Promise<boolean> {

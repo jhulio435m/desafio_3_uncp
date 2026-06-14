@@ -5,13 +5,23 @@ import { query } from '../database/db';
 import { BotTexts, ConversationTurn, LanguageCode, UserState } from './types';
 import { meaningfulTokens, normalize, tokenize, isAnyHumanAvailableNow, replyAndStore, setting, loadTexts } from './utils';
 import { askAssistant, formatAiReply } from './gemini';
-import { BOT_COPY } from './constants';
 
 type FaqRow = {
   question: string;
   answer: string;
   keywords?: string | null;
 };
+
+const SCHEDULE_QUERY_PATTERN = /horari|hora de atenci[oó]n|en qu[eé] horario|a qu[eé] hora|cuando puedo ir|cu[aá]ndo puedo ir|atenci[oó]n/i;
+
+export function isScheduleQuestion(text: string): boolean {
+  const normalized = normalize(text);
+  return SCHEDULE_QUERY_PATTERN.test(normalized);
+}
+
+async function getOfficeHoursText(fallback: string): Promise<string> {
+  return setting('office_hours', fallback);
+}
 
 function scoreFaqMatch(faq: FaqRow, terms: string[]): number {
   const questionTokens = new Set(tokenize(faq.question || ''));
@@ -79,7 +89,7 @@ export async function replyProcessServices(client: Client, message: Message, tex
   `);
 
   if (result.rows.length > 0) {
-    const response = `*Tipos de apoyo disponibles*\n\n${result.rows[0].answer}\n\n_Escriba *2* para orientar su necesidad específica._`;
+    const response = `${result.rows[0].answer}\n\n_Escriba *2* para orientar su necesidad específica._`;
     await replyAndStore(client, message.from, response, message.id);
   } else {
     await replyAndStore(client, message.from, texts.processServices, message.id);
@@ -93,11 +103,17 @@ export async function replyNeedOrientation(
   lang: LanguageCode,
   history: ConversationTurn[] = [],
 ) {
+  const texts = await loadTexts(lang);
+  if (isScheduleQuestion(text)) {
+    const officeHours = await getOfficeHoursText(texts.officeHours);
+    await replyAndStore(client, message.from, `${officeHours}\n\n${texts.backToMenu}`, message.id);
+    return;
+  }
+
   // Try Grok/Gemini first for intelligent contextual routing
   const aiResponse = await askAssistant(text, history, lang);
   if (aiResponse) {
     console.log('[AI] Responded to orientation query');
-    const texts = await loadTexts(lang);
     await replyAndStore(client, message.from, formatAiReply(aiResponse, texts.aiFooter), message.id);
     return;
   }
@@ -109,7 +125,7 @@ export async function replyNeedOrientation(
       await replyAndStore(
         client,
         message.from,
-        BOT_COPY[lang].needMoreDetail,
+        texts.needMoreDetail,
         message.id,
       );
       return;
@@ -119,14 +135,14 @@ export async function replyNeedOrientation(
     await replyAndStore(
       client,
       message.from,
-      BOT_COPY[lang].noSpecificOrientation,
+      texts.noSpecificOrientation,
       message.id,
     );
     return;
   }
 
   if (lang !== 'es') {
-    await replyAndStore(client, message.from, BOT_COPY[lang].noSpecificOrientation, message.id);
+    await replyAndStore(client, message.from, texts.noSpecificOrientation, message.id);
     return;
   }
 
@@ -155,7 +171,8 @@ export async function replyInfoMenu(client: Client, message: Message, texts: Bot
 }
 
 export async function replyHoursAndCost(client: Client, message: Message, texts: BotTexts) {
-  await replyAndStore(client, message.from, texts.officeHours, message.id);
+  const officeHours = await getOfficeHoursText(texts.officeHours);
+  await replyAndStore(client, message.from, `*Horarios y costo*\n\n${officeHours}\n\n${texts.backToMenu}`, message.id);
 }
 
 export async function replyTrackingScope(client: Client, message: Message, texts: BotTexts) {
@@ -176,6 +193,9 @@ export async function replyContacts(client: Client, message: Message, texts: Bot
 
 export async function replyFullGuide(client: Client, message: Message) {
   const pdfPath = path.resolve(__dirname, '../../documentos/reglamento_proyeccion_social.pdf');
+  const title = await setting('reference_pdf_title', '');
+  const sentMessage = await setting('reference_pdf_sent_message', '');
+  const failedMessage = await setting('reference_pdf_failed_message', '');
   let sent = false;
 
   if (typeof (client as any).sendFile === 'function') {
@@ -203,7 +223,7 @@ export async function replyFullGuide(client: Client, message: Message) {
     await replyAndStore(
       client,
       message.from,
-      '*Material de referencia*\n\nLe envié un PDF de referencia del proceso de Proyección Social UNCP. Úselo como apoyo informativo; la orientación inicial y los canales oficiales siguen siendo lo principal.\n\nEscriba *menu* para volver.',
+      `${title}\n\n${sentMessage}`,
       message.id,
     );
     return;
@@ -212,7 +232,7 @@ export async function replyFullGuide(client: Client, message: Message) {
   await replyAndStore(
     client,
     message.from,
-    '*Material de referencia*\n\nNo pude enviar el PDF en este momento. Puede continuar con los enlaces oficiales y contactos del menú de información útil, o escribir *menu* para volver.',
+    `${title}\n\n${failedMessage}`,
     message.id,
   );
 }
@@ -225,6 +245,12 @@ export async function replyKnowledgeSearchOrFallback(
   lang: LanguageCode,
   history: ConversationTurn[] = [],
 ) {
+  if (isScheduleQuestion(text)) {
+    const officeHours = await getOfficeHoursText(texts.officeHours);
+    await replyAndStore(client, message.from, `${officeHours}\n\n${texts.backToMenu}`, message.id);
+    return;
+  }
+
   // Ignoramos findFaq a pedido del usuario para usar directamente la IA
   // y tener mejor contexto conversacional.
 

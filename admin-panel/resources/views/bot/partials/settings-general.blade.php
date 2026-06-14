@@ -62,6 +62,44 @@
                         </div>
                     </section>
 
+                    <section class="rounded-2xl border border-gray-200 bg-white p-3 shadow-sm dark:border-slate-700 dark:bg-slate-800">
+                        <div class="mb-2">
+                            <h3 class="text-sm font-semibold text-gray-900 dark:text-gray-100">Mensajes operativos</h3>
+                            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Textos visibles del flujo, el alcance y los avisos del canal.</p>
+                        </div>
+
+                        <div class="grid gap-3 md:grid-cols-2">
+                            @foreach ([
+                                $welcomeSetting,
+                                $languagePromptSetting,
+                                $fallbackSetting,
+                                $scopeSetting,
+                                $officeHoursSetting,
+                                $offTopicSetting,
+                                $informalSetting,
+                                $referencePdfTitleSetting,
+                                $referencePdfSentSetting,
+                                $referencePdfFailedSetting,
+                            ] as $settingItem)
+                                @if ($settingItem)
+                                    <form method="POST" action="{{ route('bot.settings.update', $settingItem) }}" class="rounded-xl border border-gray-200 bg-gray-50 p-3 dark:border-slate-700 dark:bg-slate-900/50" @submit.prevent="submitForm">
+                                        @csrf
+                                        @method('PATCH')
+                                        <div class="mb-2">
+                                            <h4 class="text-sm font-semibold text-gray-900 dark:text-gray-100">{{ $settingItem->label }}</h4>
+                                            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ $settingItem->description }}</p>
+                                        </div>
+                                        <label class="mb-2 block text-[11px] font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Texto</label>
+                                        <textarea name="value" rows="4" class="w-full rounded-xl border-gray-300 bg-white text-sm shadow-sm focus:border-emerald-500 focus:ring-emerald-500 dark:border-slate-600 dark:bg-slate-800 dark:text-gray-100" required @input="markDirty">{{ $settingItem->value }}</textarea>
+                                        <div class="mt-2 flex justify-end">
+                                            <button type="submit" class="inline-flex items-center justify-center rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700">Guardar</button>
+                                        </div>
+                                    </form>
+                                @endif
+                            @endforeach
+                        </div>
+                    </section>
+
                     @if ($promptSetting)
                         <section class="rounded-2xl border border-gray-200 bg-white p-3 shadow-sm dark:border-slate-700 dark:bg-slate-800">
                             <div class="mb-2 flex items-start justify-between gap-3">

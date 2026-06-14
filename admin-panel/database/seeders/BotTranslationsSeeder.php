@@ -17,7 +17,7 @@ class BotTranslationsSeeder extends Seeder
                 'label' => 'Mensaje de Bienvenida',
                 'description' => 'Mensaje inicial del orientador virtual.',
                 'translations' => [
-                    'es' => 'Hola, soy el orientador virtual para solicitudes de proyección social. Puedo ayudarte a entender qué apoyo podrías solicitar, qué datos preparar, qué canal oficial usar y cuándo pedir contacto con una persona.',
+                    'es' => "Hola, soy el orientador virtual para solicitudes de proyección social.\n\nPuedo ayudarle a entender qué apoyo podría solicitar, qué datos preparar, qué canal oficial usar y cuándo pedir contacto con una persona.",
                     'qu' => 'Allinllachu, Proyección Social UNCP yanapakuqmi kani. Ima yanapayta mañakuyta atinki, ima willakuyta wakichinki, may canal oficialta llamkanki, chaykunapi yanapasayki.',
                     'ash' => 'Kitaiteri, Abiro. Nopoki YanapayBot, obamentari UNCP (Proyección Social). Amitakotantsi: puedo orientar de forma simple sobre apoyo para nampitsi, datos necesarios, canales oficiales y contacto humano.'
                 ]
@@ -27,7 +27,7 @@ class BotTranslationsSeeder extends Seeder
                 'label' => 'Respuesta Fallback (No se entiende)',
                 'description' => 'Mensaje enviado cuando el bot no entiende la solicitud.',
                 'translations' => [
-                    'es' => 'No tengo una respuesta segura para esa consulta. Puedo registrar tu pedido para que una persona te oriente sobre el proceso de proyección social.',
+                    'es' => "No se pudo consultar la información del proceso en este momento.\n\nPor favor, intenta nuevamente en unos minutos.\n\nSi el problema continúa, escribe *5* para hablar con una persona.",
                     'qu' => 'Manam kay tapukuypaq allin kutichiyta tarinichu. Runa yanapakuqwan rimayta qillqayta atini.',
                     'ash' => 'Pasonki por su mensaje. No tengo una respuesta segura para esa consulta. Puedo registrar tu pedido para que una persona te oriente.'
                 ]
@@ -37,7 +37,7 @@ class BotTranslationsSeeder extends Seeder
                 'label' => 'Alcance / Límite del Canal',
                 'description' => 'Mensaje que aclara el alcance del orientador y que no reemplaza ADESA.',
                 'translations' => [
-                    'es' => 'Este canal orienta sobre el proceso de proyección social. No reemplaza ADESA, mesa de partes ni los procedimientos oficiales de aprobación y ejecución.',
+                    'es' => "Este canal está dirigido a representantes de comunidades campesinas, comunidades urbanas, organizaciones sociales, instituciones educativas y gobiernos locales que buscan orientación sobre proyección social de la UNCP.\n\nBrinda información preliminar y no reemplaza a ADESA, mesa de partes ni a los procedimientos oficiales de evaluación, aprobación y ejecución.",
                     'qu' => 'Kay canalqa proyección socialmanta orientacionllapaqmi. Manam ADESA, mesa de partes nitaq trámite oficialkunata rantinchanchu.',
                     'ash' => 'Aviso: este canal solo orienta sobre proyección social UNCP. No reemplaza ADESA, mesa de partes ni trámites oficiales.'
                 ]
@@ -47,7 +47,7 @@ class BotTranslationsSeeder extends Seeder
                 'label' => 'Horario de Atención',
                 'description' => 'Horarios administrativos del bot/oficina.',
                 'translations' => [
-                    'es' => 'Lunes a Viernes de 8:00 AM a 1:00 PM y de 2:00 PM a 5:00 PM.',
+                    'es' => "Lunes a viernes\n8:00 AM a 1:00 PM\n2:00 PM a 5:00 PM",
                     'qu' => 'Lunesmanta vierneskama 8:00 AM - 1:00 PM hinaspa 2:00 PM - 5:00 PM.',
                     'ash' => 'Atención: lunes a viernes, 8:00 AM - 1:00 PM y 2:00 PM - 5:00 PM.'
                 ]
@@ -57,7 +57,7 @@ class BotTranslationsSeeder extends Seeder
                 'label' => 'Mensaje Fuera de Tema (Off-topic)',
                 'description' => 'Mensaje cuando el usuario habla de temas no relacionados.',
                 'translations' => [
-                    'es' => 'Este canal está dedicado exclusivamente a la orientación sobre proyección social de la UNCP.\n\n_Describa la necesidad de su comunidad o escriba *menu* para ver las opciones disponibles._',
+                    'es' => "Este canal está dedicado exclusivamente a la orientación sobre proyección social de la UNCP.\n\n_Describa la necesidad de su comunidad o escriba *menu* para ver las opciones disponibles._",
                     'qu' => 'Kay canalqa UNCP proyección socialmanta orientacionllapaqmi.\n\n_Comunidadniykipa necesidadninta qillqay utaq akllanakunata qawanaykipaq *menu* qillqay._',
                     'ash' => 'Este canal orienta solo sobre proyección social UNCP.\n\n_Describa la necesidad de su nampitsi o escriba *menu*._'
                 ]
@@ -67,7 +67,7 @@ class BotTranslationsSeeder extends Seeder
                 'label' => 'Mensaje para Mensajes Informales',
                 'description' => 'Respuesta a saludos cortos, bromas o expresiones informales.',
                 'translations' => [
-                    'es' => '_Cuando guste, describa la necesidad de su comunidad o escriba *menu* para ver las opciones disponibles._',
+                    'es' => "_Cuando guste, describa la necesidad de su comunidad o escriba *menu* para ver las opciones disponibles._",
                     'qu' => 'Manam proyección socialmanta mañakuyta tarinichu.\n\nAkllanakunata qawanaykipaq *menu* qillqay utaq comunidadniykipa necesidadninta pisillapi willaway.',
                     'ash' => 'No logré identificar una solicitud de proyección social.\n\nEscriba *menu* o describa la necesidad de su nampitsi.'
                 ]
@@ -99,7 +99,7 @@ class BotTranslationsSeeder extends Seeder
                 'label' => 'Menú Principal',
                 'description' => 'Opciones principales del bot orientador.',
                 'translations' => [
-                    'es' => "*Menú Principal*\n\n1. Orientar mi necesidad\n2. *Registrar solicitud*\n3. Información útil\n4. *Seguimiento de ticket*\n5. Hablar con una persona\n\n> _*menu* para volver. *idioma* para cambiar idioma._",
+                    'es' => "*Menú principal*\n\n1. Orientar mi necesidad\n2. Registrar solicitud\n3. Información útil\n4. Seguimiento de ticket\n5. Hablar con una persona\n\n> _Escriba *menu* para volver. Escriba *idioma* para cambiar de idioma._",
                     'qu' => "*Akllana / Menú*\n\n1. Necesidadniyta riqsichiy\n2. *Mañakuyta qillqay*\n3. Yanapakuq willakuy\n4. *Ticketniyta qatipay*\n5. Runa yanapakuqwan rimay\n\n> _*menu* qillqay kutinaykipaq. *idioma* simita tikranaykipaq._",
                     'ash' => "*Avotsi (Menú de orientación)*\n\n1. Orientar mi necesidad\n2. *Registrar solicitud*\n3. Información útil\n4. *Seguimiento de ticket*\n5. Hablar con una persona\n\n> _Escriba *idioma* para cambiar de idioma._"
                 ]
@@ -119,7 +119,7 @@ class BotTranslationsSeeder extends Seeder
                 'label' => 'Tipos de Apoyo Disponibles',
                 'description' => 'Texto sobre los tipos de apoyo ofrecidos en proyección social.',
                 'translations' => [
-                    'es' => "*Tipos de apoyo disponibles*\n\n- Capacitación y talleres\n- Asesoría técnica\n- Campañas sociales\n- Apoyo productivo\n\n_Escriba *2* para orientar su necesidad específica._",
+                    'es' => "*Tipos de apoyo disponibles*\n\n• Capacitación y talleres\n• Asesoría técnica\n• Campañas sociales\n• Apoyo productivo\n\n_Escriba *2* para orientar su necesidad específica._",
                     'qu' => "*Yanapay laya kuna*\n\n- Yachachikuy tallerkuna\n- Asesoría técnica\n- Campaña socialkuna\n- Productivo yanapay\n\n_Necesidadniykita orientanaykipaq *2* qillqay._",
                     'ash' => "*Amitakotantsi (Apoyos disponibles)*\n\n- Capacitación\n- Asesoría técnica\n- Campañas sociales\n- Apoyo productivo\n\n_Escriba *2* para orientar su necesidad._"
                 ]
@@ -169,7 +169,7 @@ class BotTranslationsSeeder extends Seeder
                 'label' => 'Respuesta General sin Coincidencia',
                 'description' => 'Mensaje alternativo cuando no se encuentra FAQ específica.',
                 'translations' => [
-                    'es' => "Puedo orientarlo con una respuesta general. Puedo ayudarte de otra forma:\n\n• *1* — Orientar mi necesidad\n• *2* — Registrar solicitud\n• *5* — Hablar con una persona\n\n_O escriba *menu* para ver todas las opciones._",
+                    'es' => "Puedo orientarlo con una respuesta general.\n\n• *1* — Orientar mi necesidad\n• *2* — Registrar solicitud\n• *5* — Hablar con una persona\n\n_O escriba *menu* para ver todas las opciones._",
                     'qu' => "Huk kutichiyta quyta atisayki. Kaykunapi yanapasayki:\n\n• *1* — Necesidadniyta riqsichiy\n• *2* — Mañakuyta qillqay\n• *5* — Runa yanapakuqwan rimay\n\n_Utaq *menu* qillqay akllanakunata qawanaykipaq._",
                     'ash' => "Amitakotantsi (puedo ayudarle). Puedo ayudarte de otra forma:\n\n• *1* — Orientar mi necesidad\n• *2* — Registrar solicitud\n• *5* — Hablar con una persona\n\n_O escriba *menu* para ver todas las opciones._"
                 ]
@@ -179,7 +179,7 @@ class BotTranslationsSeeder extends Seeder
                 'label' => 'Mensaje Sin Orientación Específica',
                 'description' => 'Texto enviado cuando el bot no halla sugerencia de área.',
                 'translations' => [
-                    'es' => 'No encontré orientación específica para eso.\n\n_Intente con más detalle, por ejemplo: "Queremos vender queso" o "Nuestro ganado necesita ayuda"._\n\nO escriba *5* para hablar directamente con una persona.',
+                    'es' => "No encontré orientación específica para eso.\n\n_Intente con más detalle, por ejemplo: \"Queremos vender queso\" o \"Nuestro ganado necesita ayuda\"._\n\nO escriba *5* para hablar directamente con una persona.",
                     'qu' => 'Manam chaypaq orientacion sutita tarinichu.\n\n_Aswan sutita qillqay, kayhina: "Quesota rantikuyta munayku" utaq "Ganadunchik yanapayta munan"._\n\nRuna yanapakuqwan rimayta munaspa *5* qillqay.',
                     'ash' => 'Pasonki. No encontré orientación específica para eso.\n\n_Escriba más detalle o marque *5* para hablar con una persona._'
                 ]
@@ -355,9 +355,9 @@ class BotTranslationsSeeder extends Seeder
                 'label' => 'Paso 5: Ubicación Distrito / Anexo',
                 'description' => 'Wizard de registro - solicitud de distrito.',
                 'translations' => [
-                    'es' => 'Indique la ubicación (_Distrito / Centro Poblado_).\n\n_Escriba *cancelar* para salir._',
-                    'qu' => 'Maypiraq kachkanki (_Distrito / Centro Poblado_).',
-                    'ash' => 'Indique la ubicación (_Distrito / Centro Poblado_).'
+                    'es' => 'Indique la ubicación (_Distrito o centro poblado_).\n\n_Escriba *cancelar* para salir._',
+                    'qu' => 'Maypiraq kachkanki (_Distrito otaq Centro Poblado_).',
+                    'ash' => 'Indique la ubicación (_Distrito o centro poblado_).'
                 ]
             ],
             'reqDesc' => [

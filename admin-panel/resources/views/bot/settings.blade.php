@@ -14,6 +14,16 @@
 
     @php
         $aiModeSetting = $settings->firstWhere('key', 'ai_mode');
+        $welcomeSetting = $settings->firstWhere('key', 'welcome_message');
+        $languagePromptSetting = $settings->firstWhere('key', 'language_prompt');
+        $fallbackSetting = $settings->firstWhere('key', 'fallback_message');
+        $scopeSetting = $settings->firstWhere('key', 'scope_message');
+        $officeHoursSetting = $settings->firstWhere('key', 'office_hours');
+        $offTopicSetting = $settings->firstWhere('key', 'off_topic_message');
+        $informalSetting = $settings->firstWhere('key', 'informal_message');
+        $referencePdfTitleSetting = $settings->firstWhere('key', 'reference_pdf_title');
+        $referencePdfSentSetting = $settings->firstWhere('key', 'reference_pdf_sent_message');
+        $referencePdfFailedSetting = $settings->firstWhere('key', 'reference_pdf_failed_message');
         $promptSetting = $settings->firstWhere('key', 'system_prompt');
         $availableSetting = $settings->firstWhere('key', 'human_available_message');
         $unavailableSetting = $settings->firstWhere('key', 'human_unavailable_message');

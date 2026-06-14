@@ -1,6 +1,5 @@
 import { Client, Message } from '@open-wa/wa-automate';
-import { LANGUAGE_PROMPT, BOT_COPY } from './constants';
-import { normalize, loadTexts, languageFromInput, formatWelcome, replyAndStore } from './utils';
+import { normalize, loadTexts, languageFromInput, formatWelcome, replyAndStore, loadLanguagePrompt } from './utils';
 import { isInformalMessage, isOffTopic } from './gemini';
 import { appendConversationMessage, getRecentConversation, getUserState, saveUserState } from './state';
 import {
@@ -35,6 +34,7 @@ export async function onMessage(client: Client, message: Message) {
   const normalized = normalize(text);
   const state = await getUserState(from);
   const guardTexts = await loadTexts(state.lang || 'es');
+  const languagePrompt = await loadLanguagePrompt();
 
   // --- Malla de Seguridad Global ---
   if (state.step === 'IDLE') {
@@ -72,7 +72,7 @@ export async function onMessage(client: Client, message: Message) {
       state.lang = undefined;
       state.data = {};
       state.lastIntent = 'general';
-      await replyAndStore(client, from, LANGUAGE_PROMPT, message.id);
+      await replyAndStore(client, from, languagePrompt, message.id);
       return;
     }
 
@@ -89,21 +89,14 @@ export async function onMessage(client: Client, message: Message) {
       if (!state.lang) {
         state.step = 'LANG_SELECTION';
         state.data = {};
-        await replyAndStore(client, from, LANGUAGE_PROMPT, message.id);
+        await replyAndStore(client, from, languagePrompt, message.id);
         return;
       }
 
       const texts = await loadTexts(state.lang);
       state.step = 'IDLE';
       state.data = {};
-      
-      const greeting = state.lastIntent && state.lastIntent !== 'general' ? '¡Hola de nuevo! 😊 Seguimos con su consulta.' : '¡Hola! Bienvenido de nuevo. 😊';
-      await replyAndStore(
-        client,
-        from,
-        `${greeting}\n\n${texts.menu}`,
-        message.id,
-      );
+      await replyAndStore(client, from, formatWelcome(texts), message.id);
       return;
     }
 
@@ -111,7 +104,7 @@ export async function onMessage(client: Client, message: Message) {
     if (state.step === 'LANG_SELECTION') {
       const lang = languageFromInput(normalized);
       if (!lang) {
-        await replyAndStore(client, from, LANGUAGE_PROMPT, message.id);
+        await replyAndStore(client, from, languagePrompt, message.id);
         return;
       }
       state.lang = lang;
@@ -119,7 +112,7 @@ export async function onMessage(client: Client, message: Message) {
       state.data = {};
       state.lastIntent = 'general';
       const texts = await loadTexts(lang);
-      await replyAndStore(client, from, formatWelcome(texts, lang), message.id);
+      await replyAndStore(client, from, formatWelcome(texts), message.id);
       return;
     }
 
@@ -228,7 +221,8 @@ export async function onMessage(client: Client, message: Message) {
   } catch (err) {
     console.error('[MSG] Unhandled error:', err);
     const fallbackLang = state.lang || 'es';
-    await replyAndStore(client, from, BOT_COPY[fallbackLang].error, message.id);
+    const texts = await loadTexts(fallbackLang);
+    await replyAndStore(client, from, texts.error, message.id);
   } finally {
     await saveUserState(from, state);
   }

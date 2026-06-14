@@ -14,81 +14,12 @@ const NVIDIA_BASE_URL = (process.env.NVIDIA_BASE_URL || 'https://integrate.api.n
 const NVIDIA_MODEL = process.env.NVIDIA_MODEL || 'moonshotai/kimi-k2.6';
 const NVIDIA_FALLBACK_MODEL = process.env.NVIDIA_FALLBACK_MODEL || 'minimaxai/minimax-m3';
 
-const REAL_FACULTY_HINTS = [
-  'Agronomía, Zootecnia, Industrias Alimentarias y Ingeniería Forestal y del Ambiente para cultivos, suelos, plagas, riego, ganado, pastos, inocuidad, reforestación y recursos naturales.',
-  'Medicina Humana, Enfermería y Trabajo Social para salud comunitaria, prevención, cuidado y vulnerabilidad social.',
-  'Educación, Comunicación, Antropología y Sociología para colegios, alfabetización, identidad, organización social y difusión.',
-  'Ingeniería Civil, Arquitectura, Sistemas, Ingeniería Eléctrica y Electrónica, Ingeniería Mecánica, Ingeniería Química, Ingeniería de Minas e Ingeniería Metalúrgica para agua, saneamiento, infraestructura, digitalización, energía e industria.',
-  'Administración, Economía, Contabilidad y Turismo para gestión, emprendimientos, costos, MYPEs y organización económica.',
+const DEFAULT_DETAIL_FIELDS = [
+  'Comunidad o institución que reporta',
+  'Distrito o centro poblado',
+  'Nombre del representante y teléfono',
+  'Descripción breve de la necesidad',
 ] as const;
-
-const DEFAULT_SYSTEM_PROMPT = `Eres YanapayBot, el asistente virtual de Proyección Social de la UNCP (Universidad Nacional del Centro del Perú).
-Tu único rol es orientar a representantes de comunidades campesinas, comunidades urbanas, organizaciones sociales y gobiernos locales sobre cómo solicitar servicios de proyección social universitaria.
-
-REGLAS ESTRICTAS:
-- Solo responde sobre proyección social UNCP, necesidades comunitarias y servicios universitarios para comunidades.
-- Si preguntan sobre política, elecciones, entretenimiento, opiniones personales u otros temas no relacionados: declina con educación y recuerda cuál es tu propósito.
-- Si el mensaje es una expresión informal (xd, jajaja, ok, piola, chevere, etc.) o no tiene sentido en contexto: responde brevemente pidiendo que describa su necesidad.
-- Respeta el IDIOMA DE SESION indicado al final de estas instrucciones. No cambies de idioma aunque el historial tenga mensajes en otro idioma. Si no hay idioma de sesión, responde en el idioma más claro del usuario; si hay duda, usa español claro.
-- Sé breve para WhatsApp: máximo 5 líneas, sin tablas, sin listas largas y sin lenguaje burocrático. Formato de WhatsApp: usa *texto* para negrita (NUNCA **texto**) y no uses cabeceras markdown (#, ##).
-- No inventes fechas, costos, nombres de personas, números de expediente, teléfonos, enlaces ni requisitos no confirmados.
-- No prometas aprobación, ejecución de proyectos ni atención inmediata. Solo orientas preliminarmente.
-- No digas que una solicitud fue aceptada, aprobada, asignada o derivada si solo estás orientando.
-- Si la consulta pide trámite formal, aclara que el canal no reemplaza la oficina o el procedimiento oficial correspondiente, como ADESA, mesa de partes u otros canales formales cuando aplique.
-- Si la respuesta es útil, cierra con una acción concreta: escribir "menu", "5" para una persona o "2" para registrar solicitud.
-- No menciones ODS, periodos académicos, informes, pagos estudiantiles ni clasificación monovalente/polivalente salvo que el usuario lo pregunte de forma explícita.
-- No empieces nombrando facultades si primero puedes explicar el tipo de apoyo y los datos que debe preparar la persona.
-- Reutiliza palabras del usuario: por ejemplo, si dice "ganado", "riego", "biohuerto", "visita técnica" o "comunidad", responde usando esas mismas palabras.
-
-CONTEXTO DEL SISTEMA:
-El bot tiene estas opciones principales:
-1. Orientar mi necesidad.
-2. Registrar solicitud.
-3. Información útil.
-4. Seguimiento de ticket.
-5. Hablar con una persona.
-
-Dentro de "Información útil" el usuario puede ver tipos de apoyo, horarios y costo, enlaces oficiales, contactos y alcance del canal.
-
-La orientación debe convertir necesidades comunitarias en una ruta preliminar:
-- Primero confirma en una frase qué entendiste del problema.
-- Luego indica el tipo de apoyo probable: capacitación, asesoría técnica, campaña social, acompañamiento productivo, diagnóstico u orientación institucional.
-- Luego indica qué datos conviene preparar: comunidad o institución, distrito/centro poblado, representante, teléfono, descripción breve, población beneficiaria y evidencia simple si existe.
-- Solo después, si ayuda, menciona un área o facultad probable, sin afirmar que ya fue asignada.
-- Termina con el siguiente paso dentro del bot: opción 2 para registrar o opción 5 si necesita una persona.
-
-ÁREAS DE REFERENCIA:
-- ODS 2 / producción y alimentos: Agronomía, Zootecnia, Industrias Alimentarias, Agronomía Tropical Satipo, Zootecnia Tropical Satipo, Agroindustria Junín, Agroindustria Tarma, Alimentarias Tropical Satipo.
-- ODS 3 / salud y bienestar: Medicina, Enfermería, Trabajo Social.
-- ODS 4 / educación y comunidad: Educación, Comunicación, Antropología, Sociología.
-- ODS 6 / agua e infraestructura: Ingeniería Química, Ingeniería Civil, Ingeniería de Minas, Ingeniería Metalúrgica.
-- ODS 7 / energía y sistemas: Ingeniería Eléctrica y Electrónica, Ingeniería Mecánica, Sistemas.
-- ODS 8 / gestión y economía: Administración, Economía, Contabilidad, Turismo Tarma, Sistemas, Administración de Negocios Tarma.
-- ODS 9 / infraestructura e innovación: Sistemas, Arquitectura, Ingeniería Civil, Agroindustria Junín.
-- ODS 11 / territorio y comunidad: Ingeniería Forestal y del Ambiente, Ingeniería Forestal Tropical Satipo, Sociología, Antropología, Turismo, Arquitectura, Sistemas.
-- ODS 13 / clima y suelos: Ingeniería Forestal y del Ambiente, Ingeniería Forestal Tropical Satipo, Agronomía, Agronomía Tropical Satipo, Ingeniería Metalúrgica.
-- ODS 14 / agua y biodiversidad: Zootecnia, Zootecnia Tropical Satipo, Ingeniería Química.
-- ODS 15 / ecosistemas: Ingeniería Forestal y del Ambiente, Ingeniería Forestal Tropical Satipo, Comunicación, Turismo.
-- ODS 16 / convivencia e instituciones: Sociología, Antropología, Trabajo Social, Comunicación.
-
-REGLAS DE GROUNDING:
-- No uses etiquetas genéricas como "Ciencias Agrarias" en la respuesta final si puedes nombrar la facultad o escuela concreta.
-- Si el caso es agrícola, prioriza Agronomía, Zootecnia, Industrias Alimentarias o Ingeniería Forestal y del Ambiente según el problema.
-- Si el caso es de salud, prioriza Medicina, Enfermería o Trabajo Social.
-- Si el caso es social o comunitario, prioriza Sociología, Antropología, Trabajo Social o Comunicación.
-- Si el caso es de infraestructura o tecnología, prioriza Ingeniería Civil, Arquitectura, Sistemas o Ingeniería Eléctrica y Electrónica.
-- Si el caso es económico o productivo, prioriza Administración, Economía, Contabilidad o Turismo.
-- Si el caso requiere una sede específica, menciona Satipo o Tarma solo cuando exista relación clara.
-
-FORMATO DE RESPUESTA:
-- Responde EXACTAMENTE con esta estructura y en este orden:
-  1. Una línea que confirme brevemente la necesidad con las palabras del usuario.
-  2. Una línea con el *tipo de apoyo probable* y, si aplica, el área probable.
-  3. Un bloque corto titulado *Datos a preparar:* con máximo 3 viñetas.
-  4. Una línea final con el *siguiente paso* dentro del bot.
-- No uses párrafos largos, no uses tablas y no conviertas la respuesta en texto corrido.
-- Si no hay suficiente información, pide una sola aclaración específica en la primera línea.
-- IMPORTANTE: Siempre cierra tus respuestas con la instrucción: "Escriba *menu* para volver o seleccione otra opción."`;
 
 let genAI: GoogleGenerativeAI | null = null;
 
@@ -143,15 +74,10 @@ function truncateLine(text: string, maxLength = 160): string {
 }
 
 function pickFallbackBullets(text: string): string[] {
-  const fallback = [
-    'Comunidad o institución',
-    'Distrito o centro poblado',
-    'Nombre del representante y teléfono',
-  ];
-
-  const sentences = splitSentences(text).slice(2, 5);
+  const sentences = splitSentences(text).slice(2, 6);
+  const fallback = [...DEFAULT_DETAIL_FIELDS];
   const bullets = sentences.length > 0 ? sentences : fallback;
-  return bullets.slice(0, 3).map((item) => truncateLine(item));
+  return bullets.slice(0, 4).map((item) => truncateLine(item));
 }
 
 function extractSection(text: string, startLabel: RegExp, endLabel?: RegExp): string {
@@ -168,9 +94,26 @@ function extractSection(text: string, startLabel: RegExp, endLabel?: RegExp): st
 
 function splitLooseBullets(text: string): string[] {
   return text
-    .split(/\n+|(?:\s+[-•*]\s+)|;\s+/)
+    .split(/\n+|(?:\s+[-•*]\s+)|;\s+|,\s+/)
     .map((part) => part.replace(/^(?:[-*•]|\d+[.)])\s+/, '').replace(/[;.,\s]+$/g, '').trim())
     .filter(Boolean);
+}
+
+function normalizeListItem(text: string): string {
+  return text
+    .replace(/^(?:prepara|datos a preparar|dato a preparar|siguiente paso)\s*:\s*/i, '')
+    .replace(/^(?:consejo|recomendaci[oó]n)\s*:\s*/i, '')
+    .replace(/^[-*•]\s*/, '')
+    .replace(/\*/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function isInformativeDetail(text: string): boolean {
+  const compact = text.replace(/\s+/g, ' ').trim();
+  if (compact.length < 18) return false;
+  if (/^(comunidad|tipo de siembra|lugar)$/i.test(compact)) return false;
+  return true;
 }
 
 function buildConversationPrompt(userMessage: string, history: ConversationTurn[]): string {
@@ -186,18 +129,7 @@ function buildConversationPrompt(userMessage: string, history: ConversationTurn[
   return `Historial reciente:\n${transcript}\n\nMensaje actual del usuario: ${userMessage}`;
 }
 
-function buildGroundingPrompt(basePrompt: string): string {
-  return [
-    basePrompt.trim(),
-    '',
-    'CONTEXTO REAL DE LA UNCP PARA APOYO DE RESPUESTA:',
-    ...REAL_FACULTY_HINTS.map((hint) => `- ${hint}`),
-    '',
-    'RECUERDA: el texto final debe sonar útil, concreto y con facultades reales. No digas "Ciencias Agrarias" si puedes ser más preciso.',
-  ].join('\n');
-}
-
-export async function askGemini(userMessage: string, history: ConversationTurn[] = [], systemPrompt: string = DEFAULT_SYSTEM_PROMPT): Promise<string | null> {
+export async function askGemini(userMessage: string, history: ConversationTurn[] = [], systemPrompt: string = ''): Promise<string | null> {
   const client = getClient();
   if (!client) return null;
 
@@ -327,16 +259,6 @@ async function askMiniMax(userMessage: string, history: ConversationTurn[], syst
   return askOpenAiCompatible('NVIDIA', NVIDIA_BASE_URL, NVIDIA_API_KEY, NVIDIA_FALLBACK_MODEL, userMessage, history, systemPrompt);
 }
 
-function languageInstruction(lang?: LanguageCode): string {
-  if (lang === 'qu') {
-    return '\n\nIDIOMA DE SESION: Responde en quechua/runasimi basico y claro. Si una palabra tecnica no tiene traduccion segura, conserva esa palabra en espanol.';
-  }
-  if (lang === 'ash') {
-    return '\n\nIDIOMA DE SESION: El usuario eligio Ashaninka. Responde con una formula simple e inclusiva en Ashaninka cuando sea seguro, y usa espanol muy claro para el resto. No vuelvas a espanol burocratico.';
-  }
-  return '\n\nIDIOMA DE SESION: Responde en espanol claro.';
-}
-
 export async function askAssistant(
   userMessage: string,
   history: ConversationTurn[] = [],
@@ -348,7 +270,12 @@ export async function askAssistant(
     return null;
   }
 
-  const systemPrompt = buildGroundingPrompt(`${await setting('system_prompt', DEFAULT_SYSTEM_PROMPT)}${languageInstruction(lang)}`);
+  const systemPrompt = (await setting('system_prompt', '')).trim();
+  if (!systemPrompt) {
+    console.warn('[AI] bot_settings.system_prompt is empty; skipping AI');
+    return null;
+  }
+
   const trimmedHistory = history.slice(-6);
 
   const groqResponse = await askGroqCloud(userMessage, trimmedHistory, systemPrompt);
@@ -386,9 +313,11 @@ export async function askAssistant(
 
 export function formatAiReply(text: string, aiFooter: string = 'Esta orientación es referencial y no reemplaza la evaluación oficial de la UNCP.'): string {
   const normalized = cleanAiBody(text);
+  const supportSection = extractSection(normalized, /apoyo probable\s*:/i, /datos a preparar\s*:/i);
   const dataSection = extractSection(normalized, /datos a preparar\s*:/i, /siguiente paso\s*:/i);
   const nextSection = extractSection(normalized, /siguiente paso\s*:/i);
   const introSection = normalized
+    .split(/apoyo probable\s*:/i)[0]
     .split(/datos a preparar\s*:/i)[0]
     .split(/siguiente paso\s*:/i)[0]
     .trim();
@@ -403,22 +332,35 @@ export function formatAiReply(text: string, aiFooter: string = 'Esta orientació
 
   const intro = truncateLine(sentencePool[0] || paragraphs[0] || normalized || 'Entiendo su necesidad.');
   const support = truncateLine(
-    sentencePool[1]
+    supportSection
+      || sentencePool[1]
       || paragraphs[1]
       || sentencePool.slice(2).find((line) => /apoyo|asesor|capacit|orient|área|area/i.test(line))
       || 'Orientación general sobre proyección social.',
   );
 
-  const detailCandidates = [
-    ...splitLooseBullets(dataSection).map((line) => truncateLine(line)),
+  const structuredDetails = splitLooseBullets(dataSection)
+    .map(normalizeListItem)
+    .filter((line) => line.length > 0 && !/siguiente paso|menu|escriba\s*2|escriba\s*5/i.test(line));
+
+  const fallbackDetails = [
     ...explicitBullets,
     ...sentencePool.slice(2),
     ...paragraphs.slice(2).map((part) => truncateLine(part)),
   ]
-    .map((part) => part.replace(/^[-*•]\s*/, '').trim())
-    .filter(Boolean);
+    .map(normalizeListItem)
+    .filter((line) => line.length > 0 && !/siguiente paso|menu|escriba\s*2|escriba\s*5/i.test(line));
 
-  const detailBullets = (detailCandidates.length > 0 ? detailCandidates : pickFallbackBullets(normalized)).slice(0, 3);
+  const detailCandidates = structuredDetails.length > 0 ? structuredDetails : fallbackDetails;
+
+  const detailPool = detailCandidates
+    .filter(isInformativeDetail)
+    .map((item) => truncateLine(item));
+
+  const detailBullets = Array.from(new Set([...DEFAULT_DETAIL_FIELDS, ...detailPool]))
+    .map((item) => truncateLine(item))
+    .filter(Boolean)
+    .slice(0, 4);
 
   const nextStep =
     truncateLine(
@@ -436,7 +378,7 @@ export function formatAiReply(text: string, aiFooter: string = 'Esta orientació
     '*Datos a preparar:*',
     ...detailBullets.map((item) => `• ${item}`),
     '',
-    `*Siguiente paso:* ${nextStep}`,
+    `*Siguiente paso:* ${nextStep.replace(/^\s*\*\s*/,'')}`,
     '',
     `> ${aiFooter}`,
   ].join('\n');
