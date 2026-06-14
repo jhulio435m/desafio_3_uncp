@@ -52,6 +52,7 @@ export interface BotTexts {
   reqDesc: string;
   reqSaved: string;
   reqConsent: string;
+  humanConsent: string;
   trackPrompt: string;
   trackNotFound: string;
   confirmPrompt: string;

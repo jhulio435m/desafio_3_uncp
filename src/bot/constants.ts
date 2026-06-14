@@ -12,26 +12,26 @@ _Escriba 1, 2 o 3._`;
 
 export const BOT_COPY: Record<LanguageCode, BotTexts> = {
   es: {
-    welcome: 'Hola, soy el orientador virtual para solicitudes de proyección social. Puedo ayudarte a entender qué apoyo podrías solicitar, qué datos preparar, qué canal oficial usar y cuándo pedir contacto con una persona.',
-    fallback: 'No tengo una respuesta segura para esa consulta. Puedo registrar tu pedido para que una persona te oriente sobre el proceso de proyección social.',
+    welcome: 'Hola, soy el orientador virtual para solicitudes de proyección social. Puedo ayudarte a entender qué apoyo podrías solicitar, qué datos preparar, qué canal oficial usar y cuándo pedir contacto con un orientador.',
+    fallback: 'No tengo una respuesta segura para esa consulta. Puedo registrar tu pedido para que un orientador te ayude sobre el proceso de proyección social.',
     scope: 'Este canal orienta sobre el proceso de proyección social. No reemplaza ADESA, mesa de partes ni los procedimientos oficiales de aprobación y ejecución.',
     officeHours: 'Lunes a Viernes de 8:00 AM a 1:00 PM y de 2:00 PM a 5:00 PM.',
     processServices: '*Tipos de apoyo disponibles*\n\n- Capacitación y talleres\n- Asesoría técnica\n- Campañas sociales\n- Apoyo productivo\n\n_Escriba *6* para volver al menú de información o *menu* para el principal._',
     officialChannelsTitle: '*Canales oficiales*',
     contactsTitle: '*Contactos de orientación*',
     backToMenu: '_Escriba *menu* para volver._',
-    humanContactHint: '_Si desea que una persona le contacte, escriba *menu* y luego *5*._',
+    humanContactHint: '_Si desea que un orientador le contacte, escriba *menu* y luego *5*._',
     invalidName: 'Indique un nombre válido o escriba "sin nombre".',
     invalidPhone: 'Indique un teléfono o WhatsApp válido.',
     invalidTopic: 'Indique un tema entendible de proyección social.',
     invalidMessage: 'Describa un poco más la orientación que necesita.',
     needMoreDetail: 'Por favor describa la necesidad con más detalle.\n\n_Ej: "Queremos mejorar la crianza de cuyes" o "Necesitamos apoyo para el agua"_',
-    noSpecificOrientation: 'No encontré orientación específica para eso.\n\n_Intente con más detalle, por ejemplo: "Queremos vender queso" o "Nuestro ganado necesita ayuda"._\n\nO escriba *5* para hablar directamente con una persona.',
+    noSpecificOrientation: 'No encontré orientación específica para eso.\n\n_Intente con más detalle, por ejemplo: "Queremos vender queso" o "Nuestro ganado necesita ayuda"._\n\nO escriba *5* para hablar con un orientador.',
     noInformation: `Puedo orientarlo con una respuesta general. Puedo ayudarte de otra forma:
 
 • *1* — Orientar mi necesidad
 • *2* — Registrar solicitud
-• *5* — Hablar con una persona
+• *5* — Hablar con un orientador
 
 _O escriba *menu* para ver todas las opciones._`,
     offTopicMessage: 'Este canal está dedicado exclusivamente a la orientación sobre proyección social de la UNCP.\n\n_Describa la necesidad de su comunidad o escriba *menu* para ver las opciones disponibles._',
@@ -46,7 +46,7 @@ _O escriba *menu* para ver todas las opciones._`,
 2. *Registrar solicitud*
 3. Información útil
 4. *Seguimiento de ticket*
-5. Hablar con una persona
+5. Hablar con un orientador
 
 > _*menu* para volver. *idioma* para cambiar idioma._`,
     infoMenu: `*Información útil*
@@ -66,7 +66,7 @@ _Ej: "Queremos mejorar la crianza de cuyes" o "Necesitamos apoyo para el agua"_`
     humanPhone: 'Indique el *teléfono o WhatsApp* de contacto.',
     humanTopic: 'Indique el *tema o necesidad* de proyección social.',
     humanMessage: 'Describa brevemente qué orientación necesita.',
-    humanSaved: '*Registro Exitoso*\n\nSu pedido de orientación humana fue registrado como *Pendiente*. Un orientador se pondrá en contacto pronto.',
+    humanSaved: '*Registro Exitoso*\n\nSu pedido de orientación fue registrado como *Pendiente*. Un orientador se pondrá en contacto pronto.',
     error: '*Aviso del Sistema*\n\nOcurrió un error al consultar la información del proceso. Intente nuevamente en unos minutos.',
     reqRepName: 'Indique su *nombre completo* (Representante).',
     reqRepDni: 'Indique su número de *DNI*.',
@@ -78,6 +78,11 @@ _Ej: "Queremos mejorar la crianza de cuyes" o "Necesitamos apoyo para el agua"_`
     reqConsent: `*Consentimiento de Privacidad*
 
 Para registrar su solicitud, se solicitarán datos básicos del representante y la comunidad. Esta información se usará únicamente para orientar, registrar y hacer seguimiento.
+
+Escriba *ACEPTAR* para continuar o *CANCELAR* para salir.`,
+    humanConsent: `*Consentimiento de Privacidad*
+
+Para que un orientador pueda contactarle, se solicitarán datos básicos de contacto. Esta información se usará únicamente para la atención personalizada.
 
 Escriba *ACEPTAR* para continuar o *CANCELAR* para salir.`,
     trackPrompt: 'Ingrese su *código de seguimiento* (ej. ```ABCDEF```).',
@@ -156,6 +161,11 @@ _Ej: "Cuy uywayta allinchayta munayku" o "Yakumanta yanapayta munayku"_`,
 Mañakuyta qillqanaykipaq, representantepa hinaspa comunidadpa datonkunata mañakusaykiku. Kay willakuykunataqa orientanallapaqmi hinaspa seguimiento ruranallapaqmi llamkasaiku.
 
 Kutinaykipaq *ACEPTAR* qillqay utaq lluqsinaykipaq *CANCELAR* qillqay.`,
+    humanConsent: `*Datosmanta Consentimiento*
+
+Runa yanapakuqwan rimanaykipaq, datonkunata mañakusaykiku. Kay willakuykunataqa yanapanallapaqmi llamkasaiku.
+
+Kutinaykipaq *ACEPTAR* qillqay utaq lluqsinaykipaq *CANCELAR* qillqay.`,
     trackPrompt: 'Ticketniykita qillqay (ej. ```ABCDEF```).',
     trackNotFound: '*Aviso del Sistema*\n\nTicket mana tarisqachu. Kaqmanta qillqay.',
     confirmPrompt: '¿Allinchu kachkan? (*SÍ* qillqay apachinaykipaq utaq *NO* qillqay cancelanaykipaq).',
@@ -228,6 +238,11 @@ _Ej: "Necesitamos apoyo para producción" o "Necesitamos capacitación"_`,
     reqDesc: 'Describa brevemente la necesidad o problema que busca resolver.',
     reqSaved: `*Kameetsa - Registro Exitoso*\n\nSu código de seguimiento es:\n\n\`\`\`{ticket}\`\`\`\n\n_Úselo para consultar el estado en la opción *4*. Pasonki._`,
     reqConsent: `*Consentimiento de Privacidad*
+
+Para registrar su solicitud, se solicitarán datos básicos. Esta información se usará únicamente para orientar y registrar su pedido.
+
+Escriba *ACEPTAR* para continuar o *CANCELAR* para salir.`,
+    humanConsent: `*Consentimiento de Privacidad*
 
 Para registrar su solicitud, se solicitarán datos básicos. Esta información se usará únicamente para orientar y registrar su pedido.
 

@@ -208,10 +208,10 @@ export async function onMessage(client: Client, message: Message) {
         await replyAndStore(client, from, `*Seguimiento*\n\n${texts.trackPrompt}`, message.id);
         break;
       case '5':
-        state.step = 'HUMAN_NAME';
+        state.step = 'HUMAN_CONSENT';
         state.data = {};
         state.lastIntent = 'human';
-        await replyAndStore(client, from, `*Contacto Humano - Paso 1/4*\n\n${texts.humanName}`, message.id);
+        await replyAndStore(client, from, texts.humanConsent, message.id);
         break;
       default:
         await replyKnowledgeSearchOrFallback(client, message, text, texts, state.lang || 'es', history);

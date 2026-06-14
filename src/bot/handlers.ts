@@ -288,6 +288,17 @@ export async function handleHumanContactFlow(client: Client, message: Message, s
   const from = message.from;
 
   switch (state.step) {
+    case 'HUMAN_CONSENT':
+      if (['aceptar', 'si', 'acepto'].includes(normalized)) {
+        state.step = 'HUMAN_NAME';
+        await replyAndStore(client, from, `*Hablar con un orientador - Paso 1/4*\n\n${texts.humanName}`, message.id);
+      } else {
+        state.step = 'IDLE';
+        state.data = {};
+        await replyAndStore(client, from, texts.cancelHint, message.id);
+        await replyAndStore(client, from, texts.menu, message.id);
+      }
+      break;
     case 'HUMAN_NAME':
       if (text.toLowerCase() !== 'sin nombre' && !hasEnoughLetters(text, 4)) {
         await replyAndStore(client, from, texts.invalidName, message.id);
@@ -295,7 +306,7 @@ export async function handleHumanContactFlow(client: Client, message: Message, s
       }
       state.data.citizen_name = text.toLowerCase() === 'sin nombre' ? '' : text;
       state.step = 'HUMAN_PHONE';
-      await replyAndStore(client, from, `*Contacto Humano - Paso 2/4*\n\n${texts.humanPhone}`, message.id);
+      await replyAndStore(client, from, `*Hablar con un orientador - Paso 2/4*\n\n${texts.humanPhone}`, message.id);
       break;
     case 'HUMAN_PHONE':
       if (!/^\+?\d[\d\s-]{6,}$/.test(text)) {
@@ -304,7 +315,7 @@ export async function handleHumanContactFlow(client: Client, message: Message, s
       }
       state.data.phone = text;
       state.step = 'HUMAN_TOPIC';
-      await replyAndStore(client, from, `*Contacto Humano - Paso 3/4*\n\n${texts.humanTopic}`, message.id);
+      await replyAndStore(client, from, `*Hablar con un orientador - Paso 3/4*\n\n${texts.humanTopic}`, message.id);
       break;
     case 'HUMAN_TOPIC':
       if (!hasEnoughLetters(text, 4)) {
@@ -313,7 +324,7 @@ export async function handleHumanContactFlow(client: Client, message: Message, s
       }
       state.data.topic = text;
       state.step = 'HUMAN_MESSAGE';
-      await replyAndStore(client, from, `*Contacto Humano - Paso 4/4*\n\n${texts.humanMessage}`, message.id);
+      await replyAndStore(client, from, `*Hablar con un orientador - Paso 4/4*\n\n${texts.humanMessage}`, message.id);
       break;
     case 'HUMAN_MESSAGE':
       if (tokenize(text).length < 2) {
