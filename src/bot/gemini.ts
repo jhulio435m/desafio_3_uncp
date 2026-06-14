@@ -58,11 +58,13 @@ La orientación debe convertir necesidades comunitarias en una ruta preliminar:
 - Ciencias de la Educación: Educación (colegios, alfabetización, pedagogía).
 
 FORMATO DE RESPUESTA:
-- Primera línea: confirma brevemente la necesidad del usuario con sus propias palabras.
-- Segunda línea: tipo de apoyo probable y, si ayuda, área probable.
-- Tercera sección: si hay varios datos, usa una lista corta con viñetas '•' y máximo 3 puntos; si es simple, usa una sola línea.
-- Última línea: siguiente paso concreto en el bot.
-- Si no hay suficiente información, pide una sola aclaración específica.
+- Responde EXACTAMENTE con esta estructura y en este orden:
+  1. Una línea que confirme brevemente la necesidad con las palabras del usuario.
+  2. Una línea con el *tipo de apoyo probable* y, si aplica, el área probable.
+  3. Un bloque corto titulado *Datos a preparar:* con máximo 3 viñetas.
+  4. Una línea final con el *siguiente paso* dentro del bot.
+- No uses párrafos largos, no uses tablas y no conviertas la respuesta en texto corrido.
+- Si no hay suficiente información, pide una sola aclaración específica en la primera línea.
 - IMPORTANTE: Siempre cierra tus respuestas con la instrucción: "Escriba *menu* para volver o seleccione otra opción."`;
 
 let genAI: GoogleGenerativeAI | null = null;
@@ -77,6 +79,50 @@ function getClient(): GoogleGenerativeAI | null {
 
 function cleanHistoryTurn(body: string): string {
   return body.replace(/>\s*Contenido generado con IA\.?/gi, '').trim();
+}
+
+function cleanAiBody(body: string): string {
+  return body
+    .replace(/>\s*(Contenido generado con IA|Esta orientación es referencial.*)\.?/gi, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function splitSentences(text: string): string[] {
+  return text
+    .split(/(?<=[.!?¿?])\s+|\n+/)
+    .map((part) => part.trim())
+    .filter(Boolean);
+}
+
+function extractBulletLines(text: string): string[] {
+  const bullets: string[] = [];
+  for (const rawLine of text.split('\n')) {
+    const line = rawLine.trim();
+    const match = line.match(/^(?:[-*•]|\d+[.)])\s+(.*)$/);
+    if (match?.[1]) {
+      bullets.push(match[1].trim());
+    }
+  }
+  return bullets.filter(Boolean);
+}
+
+function truncateLine(text: string, maxLength = 160): string {
+  const compact = text.replace(/\s+/g, ' ').trim();
+  if (compact.length <= maxLength) return compact;
+  return `${compact.slice(0, maxLength - 1).trim()}…`;
+}
+
+function pickFallbackBullets(text: string): string[] {
+  const fallback = [
+    'Comunidad o institución',
+    'Distrito o centro poblado',
+    'Nombre del representante y teléfono',
+  ];
+
+  const sentences = splitSentences(text).slice(2, 5);
+  const bullets = sentences.length > 0 ? sentences : fallback;
+  return bullets.slice(0, 3).map((item) => truncateLine(item));
 }
 
 function buildConversationPrompt(userMessage: string, history: ConversationTurn[]): string {
@@ -280,21 +326,44 @@ export async function askAssistant(
 }
 
 export function formatAiReply(text: string, aiFooter: string = 'Esta orientación es referencial y no reemplaza la evaluación oficial de la UNCP.'): string {
-  let cleaned = text.trim();
-  
-  // Clean any pre-existing footer to prevent duplicates
-  cleaned = cleaned.replace(/>\s*(Contenido generado con IA|Esta orientación es referencial.*)\.?/gi, '').trim();
-  
-  // Replace standard Markdown headers (e.g. ### Header) with WhatsApp bold
-  cleaned = cleaned.replace(/^(#{1,6})\s+(.+)$/gm, '*$2*');
-  
-  // Replace double asterisks (standard markdown bold) with single asterisks (WhatsApp bold)
-  cleaned = cleaned.replace(/\*\*/g, '*');
-  
-  // Convert standard bullet points (-, *, +) at the beginning of lines to •
-  cleaned = cleaned.replace(/^(\s*)[-\*\+]\s+/gm, '$1• ');
-  
-  return `${cleaned}\n\n> ${aiFooter}`;
+  const normalized = cleanAiBody(text);
+  const paragraphs = normalized
+    .split(/\n{2,}/)
+    .map((part) => part.trim())
+    .filter(Boolean);
+
+  const explicitBullets = extractBulletLines(text).map((line) => truncateLine(line));
+  const sentencePool = splitSentences(normalized).map((line) => truncateLine(line));
+
+  const intro = truncateLine(paragraphs[0] || sentencePool[0] || normalized || 'Entiendo su necesidad.');
+  const support = truncateLine(
+    sentencePool[1]
+      || paragraphs[1]
+      || 'Orientación general sobre proyección social.',
+  );
+
+  const detailCandidates = [
+    ...explicitBullets,
+    ...sentencePool.slice(2),
+    ...paragraphs.slice(2).map((part) => truncateLine(part)),
+  ]
+    .map((part) => part.replace(/^[-*•]\s*/, '').trim())
+    .filter(Boolean);
+
+  const detailBullets = (detailCandidates.length > 0 ? detailCandidates : pickFallbackBullets(normalized)).slice(0, 3);
+
+  const nextStep =
+    sentencePool.find((line) => /menu|opción\s*2|opción\s*5|registr/i.test(line))
+    || 'Escriba *2* para registrar o *5* para hablar con una persona.';
+
+  return [
+    intro,
+    `*Apoyo probable:* ${support}`,
+    '*Datos a preparar:*',
+    ...detailBullets.map((item) => `• ${item}`),
+    `*Siguiente paso:* ${nextStep}`,
+    `> ${aiFooter}`,
+  ].join('\n');
 }
 
 // ─── Local guards (no API needed) ────────────────────────────────────────────
