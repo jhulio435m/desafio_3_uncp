@@ -243,21 +243,49 @@ class BotManagementController extends Controller
     public function settings(): View
     {
         return view('bot.settings', [
-            'settings' => BotSetting::orderBy('label')->get(),
+            'settings' => BotSetting::whereIn('key', ['ai_mode', 'system_prompt', 'human_available_message', 'human_unavailable_message'])->orderBy('label')->get(),
             'categories' => KnowledgeCategory::orderBy('name')->get(),
+            'translationKeys' => \App\Models\BotTranslationKey::with('translations')->orderBy('group')->orderBy('label')->get(),
         ]);
     }
 
-    public function updateSetting(Request $request, BotSetting $botSetting): RedirectResponse
+    public function updateTranslation(Request $request, \App\Models\BotTranslationKey $botTranslationKey)
+    {
+        $data = $request->validate([
+            'values' => ['required', 'array'],
+            'values.es' => ['required', 'string'],
+            'values.qu' => ['required', 'string'],
+            'values.ash' => ['required', 'string'],
+        ]);
+
+        foreach ($data['values'] as $lang => $value) {
+            $botTranslationKey->translations()->updateOrCreate(
+                ['lang' => $lang],
+                ['value' => $value]
+            );
+        }
+
+        if ($request->wantsJson()) {
+            return response()->json(['message' => 'Traducciones actualizadas.']);
+        }
+
+        return back()->with('status', 'Traducciones para "' . $botTranslationKey->label . '" actualizadas.');
+    }
+
+    public function updateSetting(Request $request, BotSetting $botSetting)
     {
         $botSetting->update($request->validate([
             'value' => ['required', 'string'],
         ]));
 
+        if ($request->wantsJson()) {
+            return response()->json(['message' => 'Configuración actualizada.']);
+        }
+
         return back()->with('status', 'Configuración actualizada.');
     }
 
-    public function storeCategory(Request $request): RedirectResponse
+    public function storeCategory(Request $request)
     {
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
@@ -270,7 +298,42 @@ class BotManagementController extends Controller
 
         KnowledgeCategory::updateOrCreate(['slug' => $data['slug']], $data);
 
+        if ($request->wantsJson()) {
+            return response()->json(['message' => 'Categoría guardada.']);
+        }
+
         return back()->with('status', 'Categoría guardada.');
+    }
+
+    public function updateCategory(Request $request, KnowledgeCategory $knowledgeCategory)
+    {
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'description' => ['nullable', 'string'],
+            'is_active' => ['nullable', 'boolean'],
+        ]);
+
+        $data['slug'] = Str::slug($data['name']);
+        $data['is_active'] = $request->boolean('is_active');
+
+        $knowledgeCategory->update($data);
+
+        if ($request->wantsJson()) {
+            return response()->json(['message' => 'Categoría actualizada.']);
+        }
+
+        return back()->with('status', 'Categoría actualizada.');
+    }
+
+    public function destroyCategory(Request $request, KnowledgeCategory $knowledgeCategory)
+    {
+        $knowledgeCategory->delete();
+
+        if ($request->wantsJson()) {
+            return response()->json(['message' => 'Categoría eliminada.']);
+        }
+
+        return back()->with('status', 'Categoría eliminada.');
     }
 
     private function validateFaq(Request $request): array

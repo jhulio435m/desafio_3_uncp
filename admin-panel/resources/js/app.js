@@ -64,5 +64,50 @@ Alpine.data('notificationsPanel', (url) => ({
     },
 }));
 
+Alpine.data('botSettingsEditor', (keys = []) => ({
+    activeTab: localStorage.getItem('settings-active-tab') || 'general',
+    activeGroup: localStorage.getItem('settings-active-group') || 'welcome_scope',
+    searchQuery: '',
+    selectedKeyId: localStorage.getItem('settings-selected-key-id')
+        ? parseInt(localStorage.getItem('settings-selected-key-id'), 10)
+        : null,
+    keys,
+    init() {
+        if (!this.selectedKeyId || !this.keys.some((key) => key.id === this.selectedKeyId && key.group === this.activeGroup)) {
+            this.selectFirstKeyOfGroup(this.activeGroup);
+        }
+    },
+    setActiveTab(tab) {
+        this.activeTab = tab;
+        localStorage.setItem('settings-active-tab', tab);
+    },
+    setActiveGroup(group) {
+        this.activeGroup = group;
+        localStorage.setItem('settings-active-group', group);
+        this.selectFirstKeyOfGroup(group);
+    },
+    selectKey(id) {
+        this.selectedKeyId = id;
+        localStorage.setItem('settings-selected-key-id', id);
+    },
+    selectFirstKeyOfGroup(group) {
+        const keyRow = this.keys.find((key) => key.group === group);
+
+        if (keyRow) {
+            this.selectKey(keyRow.id);
+        } else {
+            this.selectedKeyId = null;
+            localStorage.removeItem('settings-selected-key-id');
+        }
+    },
+    matchesQuery(key, label) {
+        const query = this.searchQuery.trim().toLowerCase();
+
+        if (!query) return true;
+
+        return key.includes(query) || label.includes(query);
+    },
+}));
+
 window.lucide.createIcons();
 Alpine.start();

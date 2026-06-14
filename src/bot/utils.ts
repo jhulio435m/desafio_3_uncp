@@ -48,39 +48,30 @@ export async function setting(key: string, fallback: string): Promise<string> {
 }
 
 export async function loadTexts(lang: LanguageCode): Promise<BotTexts> {
-  const copy = BOT_COPY[lang];
+  const fallbackCopy = { ...BOT_COPY[lang] };
 
-  if (lang !== 'es') {
-    return copy;
+  try {
+    const result = await query(
+      `SELECT bk.key, bt.value 
+       FROM bot_translations bt
+       JOIN bot_translation_keys bk ON bk.id = bt.bot_translation_key_id
+       WHERE bt.lang = $1`,
+      [lang]
+    );
+
+    const dbCopy: Record<string, string> = {};
+    for (const row of result.rows) {
+      dbCopy[row.key] = row.value;
+    }
+
+    return {
+      ...fallbackCopy,
+      ...dbCopy,
+    } as BotTexts;
+  } catch (error) {
+    console.error(`[BOT] Error loading translations for lang ${lang} from DB:`, error);
+    return fallbackCopy;
   }
-
-  return {
-    ...copy,
-    welcome: await setting(
-      'welcome_message',
-      copy.welcome,
-    ),
-    fallback: await setting(
-      'fallback_message',
-      copy.fallback,
-    ),
-    scope: await setting(
-      'scope_message',
-      copy.scope,
-    ),
-    officeHours: await setting(
-      'office_hours',
-      copy.officeHours,
-    ),
-    offTopicMessage: await setting(
-      'off_topic_message',
-      copy.offTopicMessage,
-    ),
-    informalMessage: await setting(
-      'informal_message',
-      copy.informalMessage,
-    ),
-  } as BotTexts;
 }
 
 export function languageFromInput(input: string): LanguageCode | null {
@@ -120,7 +111,7 @@ export function meaningfulTokens(text: string): string[] {
 export async function replyAndStore(client: Client, to: any, body: string, id?: string): Promise<void> {
   try {
     await (client as any).simulateTyping(to, true);
-    const delay = Math.min(Math.max(body.length * 15, 500), 2500);
+    const delay = Math.min(Math.max(body.length * 25, 1000), 4000);
     await new Promise((resolve) => setTimeout(resolve, delay));
   } catch (err) {
     console.warn('[BOT] simulateTyping failed:', err);

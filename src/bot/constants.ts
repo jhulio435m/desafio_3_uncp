@@ -27,9 +27,15 @@ export const BOT_COPY: Record<LanguageCode, BotTexts> = {
     invalidMessage: 'Describa un poco más la orientación que necesita.',
     needMoreDetail: 'Por favor describa la necesidad con más detalle.\n\n_Ej: "Queremos mejorar la crianza de cuyes" o "Necesitamos apoyo para el agua"_',
     noSpecificOrientation: 'No encontré orientación específica para eso.\n\n_Intente con más detalle, por ejemplo: "Queremos vender queso" o "Nuestro ganado necesita ayuda"._\n\nO escriba *5* para hablar directamente con una persona.',
-    noInformation: 'No tengo información sobre eso.\n\nEscriba *menu* para ver opciones o *5* para hablar con una persona.',
+    noInformation: `Puedo orientarlo con una respuesta general. Puedo ayudarte de otra forma:
+
+• *1* — Orientar mi necesidad
+• *2* — Registrar solicitud
+• *5* — Hablar con una persona
+
+_O escriba *menu* para ver todas las opciones._`,
     offTopicMessage: 'Este canal está dedicado exclusivamente a la orientación sobre proyección social de la UNCP.\n\n_Describa la necesidad de su comunidad o escriba *menu* para ver las opciones disponibles._',
-    informalMessage: '_Cuando guste, describa la necesidad de su comunidad o escriba *menu* para ver las opciones disponibles._',
+    informalMessage: 'No logré identificar una solicitud relacionada con proyección social.\n\nEscriba *menu* para ver opciones o describa brevemente la necesidad de su comunidad.',
     trackingStatusTitle: '*Estado de tu solicitud*',
     trackingInstitution: 'Institución',
     trackingStatus: 'Estado',
@@ -56,21 +62,30 @@ export const BOT_COPY: Record<LanguageCode, BotTexts> = {
     needPrompt: `Describa en una frase la necesidad de su comunidad.
 
 _Ej: "Queremos mejorar la crianza de cuyes" o "Necesitamos apoyo para el agua"_`,
-    humanName: 'Indique el *nombre del representante* o escriba "sin nombre".',
-    humanPhone: 'Indique el *teléfono o WhatsApp* de contacto.',
-    humanTopic: 'Indique el *tema o necesidad* de proyección social.',
-    humanMessage: 'Describa brevemente qué orientación necesita.',
+    humanName: 'Indique el *nombre del representante* o escriba "sin nombre".\n\n_Escriba *cancelar* para salir._',
+    humanPhone: 'Indique el *teléfono o WhatsApp* de contacto.\n\n_Escriba *cancelar* para salir._',
+    humanTopic: 'Indique el *tema o necesidad* de proyección social.\n\n_Escriba *cancelar* para salir._',
+    humanMessage: 'Describa brevemente qué orientación necesita.\n\n_Escriba *cancelar* para salir._',
     humanSaved: '*Registro Exitoso*\n\nSu pedido de orientación humana fue registrado como *Pendiente*. Un orientador se pondrá en contacto pronto.',
     error: '*Aviso del Sistema*\n\nOcurrió un error al consultar la información del proceso. Intente nuevamente en unos minutos.',
-    reqRepName: 'Indique su *nombre completo* (Representante).',
-    reqRepDni: 'Indique su número de *DNI*.',
-    reqInstName: 'Indique el *nombre de su Comunidad o Institución*.',
-    reqInstType: 'Indique el tipo: _Comunidad Campesina_, _Gobierno Local_ u _Organización Urbana_.',
-    reqLocation: 'Indique la ubicación (_Distrito / Centro Poblado_).',
-    reqDesc: 'Describa brevemente la necesidad o problema que busca resolver.',
+    reqRepName: 'Indique su *nombre completo* (Representante).\n\n_Escriba *cancelar* para salir._',
+    reqRepDni: 'Indique su número de *DNI*.\n\n_Escriba *cancelar* para salir._',
+    reqInstName: 'Indique el *nombre de su Comunidad o Institución*.\n\n_Escriba *cancelar* para salir._',
+    reqInstType: 'Indique el tipo: _Comunidad Campesina_, _Gobierno Local_ u _Organización Urbana_.\n\n_Escriba *cancelar* para salir._',
+    reqLocation: 'Indique la ubicación (_Distrito / Centro Poblado_).\n\n_Escriba *cancelar* para salir._',
+    reqDesc: 'Describa brevemente la necesidad o problema que busca resolver.\n\n_Escriba *cancelar* para salir._',
     reqSaved: `*Registro Exitoso*\n\nSu código de seguimiento es:\n\n\`\`\`{ticket}\`\`\`\n\n_Úselo para consultar el estado en la opción *4*._`,
+    reqConsent: `*Consentimiento de Privacidad*
+
+Para registrar su solicitud, se solicitarán datos básicos del representante y la comunidad. Esta información se usará únicamente para orientar, registrar y hacer seguimiento.
+
+Escriba *ACEPTAR* para continuar o *CANCELAR* para salir.`,
     trackPrompt: 'Ingrese su *código de seguimiento* (ej. ```ABCDEF```).',
     trackNotFound: '*Aviso del Sistema*\n\nCódigo no encontrado. Verifique e intente nuevamente.',
+    confirmPrompt: '¿Los datos son correctos? (Responda *SÍ* para enviar o *NO* para cancelar).',
+    cancelHint: '_Proceso cancelado. Escriba *menu* para volver._',
+    confirmSummary: '*Resumen de su solicitud*',
+    aiFooter: 'Esta orientación es referencial y no reemplaza la evaluación oficial de la UNCP.',
   },
   qu: {
     welcome: 'Allinllachu, Proyección Social UNCP yanapakuqmi kani. Ima yanapayta mañakuyta atinki, ima willakuyta wakichinki, may canal oficialta llamkanki, chaykunapi yanapasayki.',
@@ -88,9 +103,15 @@ _Ej: "Queremos mejorar la crianza de cuyes" o "Necesitamos apoyo para el agua"_`
     invalidMessage: 'Ima orientacionta munanki, aswan sutita qillqay.',
     needMoreDetail: 'Necesidadniykita aswan sutita willaway.\n\n_Ej: "Cuy uywayta allinchayta munayku" o "Yakumanta yanapayta munayku"_',
     noSpecificOrientation: 'Manam chaypaq orientacion sutita tarinichu.\n\n_Aswan sutita qillqay, kayhina: "Quesota rantikuyta munayku" utaq "Ganadunchik yanapayta munan"._\n\nRuna yanapakuqwan rimayta munaspa *5* qillqay.',
-    noInformation: 'Manam chaymanta willakuyta tarinichu.\n\nAkllanakunata qawanaykipaq *menu* qillqay utaq runawan rimanaykipaq *5* qillqay.',
+    noInformation: `Huk kutichiyta quyta atisayki. Kaykunapi yanapasayki:
+
+• *1* — Necesidadniyta riqsichiy
+• *2* — Mañakuyta qillqay
+• *5* — Runa yanapakuqwan rimay
+
+_Utaq *menu* qillqay akllanakunata qawanaykipaq._`,
     offTopicMessage: 'Kay canalqa UNCP proyección socialmanta orientacionllapaqmi.\n\n_Comunidadniykipa necesidadninta qillqay utaq akllanakunata qawanaykipaq *menu* qillqay._',
-    informalMessage: '_Munaspayki, comunidadniykipa necesidadninta qillqay utaq akllanakunata qawanaykipaq *menu* qillqay._',
+    informalMessage: 'Manam proyección socialmanta mañakuyta tarinichu.\n\nAkllanakunata qawanaykipaq *menu* qillqay utaq comunidadniykipa necesidadninta pisillapi willaway.',
     trackingStatusTitle: '*Mañakuyniykipa estado*',
     trackingInstitution: 'Institución',
     trackingStatus: 'Estado',
@@ -130,15 +151,24 @@ _Ej: "Cuy uywayta allinchayta munayku" o "Yakumanta yanapayta munayku"_`,
     reqLocation: 'Maypiraq kachkanki (_Distrito / Centro Poblado_).',
     reqDesc: 'Imapaqtaq yanapayta munanki, pisillapi qillqay.',
     reqSaved: `*Registro Exitoso*\n\nTicketniyki:\n\n\`\`\`{ticket}\`\`\`\n\n_Option *4* kaqpi qatipay._`,
+    reqConsent: `*Datosmanta Consentimiento*
+
+Mañakuyta qillqanaykipaq, representantepa hinaspa comunidadpa datonkunata mañakusaykiku. Kay willakuykunataqa orientanallapaqmi hinaspa seguimiento ruranallapaqmi llamkasaiku.
+
+Kutinaykipaq *ACEPTAR* qillqay utaq lluqsinaykipaq *CANCELAR* qillqay.`,
     trackPrompt: 'Ticketniykita qillqay (ej. ```ABCDEF```).',
     trackNotFound: '*Aviso del Sistema*\n\nTicket mana tarisqachu. Kaqmanta qillqay.',
+    confirmPrompt: '¿Allinchu kachkan? (*SÍ* qillqay apachinaykipaq utaq *NO* qillqay cancelanaykipaq).',
+    cancelHint: '_Cancelasqa. Kutinaykipaq *menu* qillqay._',
+    confirmSummary: '*Mañakuyniykipa resumen*',
+    aiFooter: 'Kay orientacionqa referencialllami, manam UNCP oficial evaluaciontachu rantinchan.',
   },
   ash: {
-    welcome: 'Nopoki, soy el orientador virtual de Proyección Social UNCP. Puedo orientar de forma simple sobre apoyo, datos necesarios, canales oficiales y contacto humano.',
-    fallback: 'No tengo una respuesta segura para esa consulta. Puedo registrar tu pedido para que una persona te oriente.',
-    scope: 'Este canal solo orienta sobre proyección social UNCP. No reemplaza ADESA, mesa de partes ni trámites oficiales.',
-    officeHours: 'Atención referencial: lunes a viernes, 8:00 AM - 1:00 PM y 2:00 PM - 5:00 PM.',
-    processServices: '*Apoyos disponibles*\n\n- Capacitación\n- Asesoría técnica\n- Campañas sociales\n- Apoyo productivo\n\n_Escriba *2* para orientar su necesidad._',
+    welcome: 'Kitaiteri, Abiro. Nopoki YanapayBot, obamentari UNCP (Proyección Social). Amitakotantsi: puedo orientar de forma simple sobre apoyo para nampitsi, datos necesarios, canales oficiales y contacto humano.',
+    fallback: 'Pasonki por su mensaje. No tengo una respuesta segura para esa consulta. Puedo registrar tu pedido para que una persona te oriente.',
+    scope: 'Aviso: este canal solo orienta sobre proyección social UNCP. No reemplaza ADESA, mesa de partes ni trámites oficiales.',
+    officeHours: 'Atención: lunes a viernes, 8:00 AM - 1:00 PM y 2:00 PM - 5:00 PM.',
+    processServices: '*Amitakotantsi (Apoyos disponibles)*\n\n- Capacitación\n- Asesoría técnica\n- Campañas sociales\n- Apoyo productivo\n\n_Escriba *2* para orientar su necesidad._',
     officialChannelsTitle: '*Canales oficiales*',
     contactsTitle: '*Contactos de orientación*',
     backToMenu: '_Escriba *menu* para volver._',
@@ -148,15 +178,21 @@ _Ej: "Cuy uywayta allinchayta munayku" o "Yakumanta yanapayta munayku"_`,
     invalidTopic: 'Indique un tema entendible de proyección social.',
     invalidMessage: 'Describa un poco más la orientación que necesita.',
     needMoreDetail: 'Describa la necesidad con más detalle.\n\n_Ej: "Necesitamos apoyo para producción" o "Necesitamos capacitación"_',
-    noSpecificOrientation: 'No encontré orientación específica para eso.\n\n_Escriba más detalle o marque *5* para hablar con una persona._',
-    noInformation: 'No tengo información sobre eso.\n\nEscriba *menu* para ver opciones o *5* para hablar con una persona.',
-    offTopicMessage: 'Este canal orienta solo sobre proyección social UNCP.\n\n_Describa la necesidad de su comunidad o escriba *menu*._',
-    informalMessage: '_Cuando guste, describa la necesidad de su comunidad o escriba *menu*._',
+    noSpecificOrientation: 'Pasonki. No encontré orientación específica para eso.\n\n_Escriba más detalle o marque *5* para hablar con una persona._',
+    noInformation: `Amitakotantsi (puedo ayudarle). Puedo ayudarte de otra forma:
+
+• *1* — Orientar mi necesidad
+• *2* — Registrar solicitud
+• *5* — Hablar con una persona
+
+_O escriba *menu* para ver todas las opciones._`,
+    offTopicMessage: 'Este canal orienta solo sobre proyección social UNCP.\n\n_Describa la necesidad de su nampitsi o escriba *menu*._',
+    informalMessage: 'No logré identificar una solicitud de proyección social.\n\nEscriba *menu* o describa la necesidad de su nampitsi.',
     trackingStatusTitle: '*Estado de su solicitud*',
-    trackingInstitution: 'Institución',
+    trackingInstitution: 'Institución (Nampitsi)',
     trackingStatus: 'Estado',
     trackingDate: 'Fecha',
-    menu: `*Menú - Ñantsi de orientación*
+    menu: `*Avotsi (Menú de orientación)*
 
 1. Orientar mi necesidad
 2. *Registrar solicitud*
@@ -175,23 +211,32 @@ _Ej: "Cuy uywayta allinchayta munayku" o "Yakumanta yanapayta munayku"_`,
 6. Volver al menú principal
 
 > _Escriba un número del 1 al 6._`,
-    needPrompt: `Describa en una frase la necesidad de su comunidad.
+    needPrompt: `Describa en una frase la necesidad de su nampitsi.
 
 _Ej: "Necesitamos apoyo para producción" o "Necesitamos capacitación"_`,
     humanName: 'Indique el *nombre del representante* o escriba "sin nombre".',
     humanPhone: 'Indique el *teléfono o WhatsApp* de contacto.',
     humanTopic: 'Indique el *tema o necesidad* de proyección social.',
     humanMessage: 'Describa brevemente qué orientación necesita.',
-    humanSaved: '*Registro Exitoso*\n\nSu pedido de orientación humana fue registrado como *Pendiente*.',
+    humanSaved: '*Kameetsa - Registro Exitoso*\n\nSu pedido de orientación humana fue registrado como *Pendiente*. Pasonki.',
     error: '*Aviso del Sistema*\n\nNo se pudo consultar la información. Intente nuevamente en unos minutos.',
     reqRepName: 'Indique su *nombre completo* (Representante).',
     reqRepDni: 'Indique su número de *DNI*.',
-    reqInstName: 'Indique el *nombre de su Comunidad o Institución*.',
+    reqInstName: 'Indique el *nombre de su Nampitsi o Institución*.',
     reqInstType: 'Indique el tipo: _Comunidad Campesina_, _Gobierno Local_ u _Organización Urbana_.',
     reqLocation: 'Indique la ubicación (_Distrito / Centro Poblado_).',
     reqDesc: 'Describa brevemente la necesidad o problema que busca resolver.',
-    reqSaved: `*Registro Exitoso*\n\nSu código de seguimiento es:\n\n\`\`\`{ticket}\`\`\`\n\n_Úselo para consultar el estado en la opción *4*._`,
+    reqSaved: `*Kameetsa - Registro Exitoso*\n\nSu código de seguimiento es:\n\n\`\`\`{ticket}\`\`\`\n\n_Úselo para consultar el estado en la opción *4*. Pasonki._`,
+    reqConsent: `*Consentimiento de Privacidad*
+
+Para registrar su solicitud, se solicitarán datos básicos. Esta información se usará únicamente para orientar y registrar su pedido.
+
+Escriba *ACEPTAR* para continuar o *CANCELAR* para salir.`,
     trackPrompt: 'Ingrese su *código de seguimiento* (ej. ```ABCDEF```).',
     trackNotFound: '*Aviso del Sistema*\n\nCódigo no encontrado. Verifique e intente nuevamente.',
+    confirmPrompt: '¿Los datos son correctos? (SÍ / NO).',
+    cancelHint: '_Cancelado. Escriba *menu*._',
+    confirmSummary: '*Resumen de su solicitud*',
+    aiFooter: 'Esta orientación es referencial y no reemplaza la evaluación oficial de la UNCP.',
   },
 };

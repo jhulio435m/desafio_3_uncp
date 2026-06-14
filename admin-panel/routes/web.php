@@ -42,7 +42,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('/bot-settings', [BotManagementController::class, 'settings'])->name('bot.settings');
     Route::patch('/bot-settings/{botSetting}', [BotManagementController::class, 'updateSetting'])->name('bot.settings.update');
+    Route::patch('/bot-settings/translations/{botTranslationKey}', [BotManagementController::class, 'updateTranslation'])->name('bot.translations.update');
     Route::post('/knowledge-categories', [BotManagementController::class, 'storeCategory'])->name('bot.categories.store');
+    Route::patch('/knowledge-categories/{knowledgeCategory}', [BotManagementController::class, 'updateCategory'])->name('bot.categories.update');
+    Route::delete('/knowledge-categories/{knowledgeCategory}', [BotManagementController::class, 'destroyCategory'])->name('bot.categories.destroy');
 
     Route::get('/bot-status', [BotManagementController::class, 'getBotStatus'])->name('bot.status');
     Route::get('/notifications', [BotManagementController::class, 'notifications'])->name('notifications.index');

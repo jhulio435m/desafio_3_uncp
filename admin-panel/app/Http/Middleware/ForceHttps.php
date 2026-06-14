@@ -11,7 +11,9 @@ class ForceHttps
 {
     public function handle(Request $request, Closure $next): Response
     {
-        URL::forceScheme('https');
+        if (!str_contains($request->getHost(), 'localhost') && !str_contains($request->getHost(), '127.0.0.1')) {
+            URL::forceScheme('https');
+        }
         return $next($request);
     }
 }

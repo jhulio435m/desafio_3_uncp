@@ -74,7 +74,7 @@ async function scenarioCommonVillager(client: FakeClient, phone: string) {
   assertReplyContains(client, 'Menú Principal', 'villager spanish welcome');
 
   await send(client, phone, 'hola', 'contextual-greeting');
-  assertReplyContains(client, 'Seguimos con su consulta', 'villager contextual greeting');
+  assertReplyContains(client, 'Bienvenido de nuevo', 'villager contextual greeting');
 
   await send(client, phone, '1', 'orientation-start');
   assertReplyContains(client, 'Describa en una frase', 'villager option 1 prompt');
@@ -159,7 +159,7 @@ async function scenarioLostUser(client: FakeClient, phone: string) {
   if (!last?.body) {
     throw new Error('lost confused: missing reply');
   }
-  if (!last.body.includes('Contenido generado con IA.') && !last.body.includes('No tengo información sobre eso.')) {
+  if (!last.body.includes('Esta orientación es referencial') && !last.body.includes('Puedo orientarlo con una respuesta general')) {
     throw new Error(`lost confused: unexpected reply ${JSON.stringify(last.body)}`);
   }
 }
@@ -185,22 +185,33 @@ async function scenarioHumanContactValidation(client: FakeClient, phone: string)
   assertReplyContains(client, 'Describa un poco más', 'human invalid message');
 
   await send(client, phone, 'Necesitamos orientación para saneamiento', 'human-message');
+  assertReplyContains(client, 'Resumen', 'human confirmation summary');
+  
+  await send(client, phone, 'sí', 'human-confirm');
   assertReplyContains(client, 'Pendiente', 'human request saved');
 }
 
 async function scenarioFormalRequestAndTracking(client: FakeClient, requestPhone: string, trackPhone: string) {
   await send(client, requestPhone, '1', 'request-lang');
   await send(client, requestPhone, '2', 'request-start');
+  assertReplyContains(client, 'Consentimiento', 'request consent prompt');
+
+  await send(client, requestPhone, 'aceptar', 'request-consent-ok');
   assertReplyContains(client, 'nombre completo', 'request start');
+
   await send(client, requestPhone, 'Juan Ramos', 'request-name');
   await send(client, requestPhone, '12345678', 'request-dni');
   await send(client, requestPhone, 'Comunidad Demo Smoke', 'request-institution');
   await send(client, requestPhone, 'Comunidad Campesina', 'request-type');
   await send(client, requestPhone, 'El Tambo / Anexo Demo', 'request-location');
   await send(client, requestPhone, 'Queremos capacitación para procesar lácteos', 'request-desc');
+  assertReplyContains(client, 'Resumen', 'request confirmation summary');
+
+  await send(client, requestPhone, 'sí', 'request-confirm');
   assertReplyContains(client, 'código de seguimiento', 'request saved');
 
-  const ticketMatch = client.replies[client.replies.length - 1].body.match(/```([^`]+)```/);
+  const lastReply = client.replies.find(r => r.body.includes('código de seguimiento'));
+  const ticketMatch = lastReply?.body.match(/```([^`]+)```/);
   if (!ticketMatch) {
     throw new Error('request saved: tracking code not found in response');
   }
@@ -289,7 +300,7 @@ async function main() {
     throw new Error(`free-text fallback failed: ${JSON.stringify(last?.body)}`);
   }
   if (
-    !last.body.includes('No tengo información sobre eso.') &&
+    !last.body.includes('Aún no tengo una respuesta preparada') &&
     !last.body.includes('Contenido generado con IA.') &&
     !last.body.includes('biohuertos') &&
     !last.body.includes('huertos escolares')

@@ -3,7 +3,7 @@ import * as path from 'path';
 import * as fs from 'fs';
 import { query } from '../database/db';
 import { BotTexts, ConversationTurn, LanguageCode, UserState } from './types';
-import { meaningfulTokens, normalize, tokenize, isAnyHumanAvailableNow, replyAndStore, setting } from './utils';
+import { meaningfulTokens, normalize, tokenize, isAnyHumanAvailableNow, replyAndStore, setting, loadTexts } from './utils';
 import { askAssistant, formatAiReply } from './gemini';
 import { BOT_COPY } from './constants';
 
@@ -97,7 +97,8 @@ export async function replyNeedOrientation(
   const aiResponse = await askAssistant(text, history, lang);
   if (aiResponse) {
     console.log('[AI] Responded to orientation query');
-    await replyAndStore(client, message.from, formatAiReply(aiResponse), message.id);
+    const texts = await loadTexts(lang);
+    await replyAndStore(client, message.from, formatAiReply(aiResponse, texts.aiFooter), message.id);
     return;
   }
 
@@ -230,7 +231,7 @@ export async function replyKnowledgeSearchOrFallback(
   const aiResponse = await askAssistant(text, history, lang);
   if (aiResponse) {
     console.log('[AI] Responded to free-text query');
-    await replyAndStore(client, message.from, formatAiReply(aiResponse), message.id);
+    await replyAndStore(client, message.from, formatAiReply(aiResponse, texts.aiFooter), message.id);
     return;
   }
 
@@ -257,6 +258,7 @@ function hasEnoughLetters(text: string, minLetters = 3): boolean {
 
 export async function handleHumanContactFlow(client: Client, message: Message, state: UserState, texts: BotTexts) {
   const text = message.body.trim();
+  const normalized = normalize(text);
   const from = message.from;
 
   switch (state.step) {
@@ -267,7 +269,7 @@ export async function handleHumanContactFlow(client: Client, message: Message, s
       }
       state.data.citizen_name = text.toLowerCase() === 'sin nombre' ? '' : text;
       state.step = 'HUMAN_PHONE';
-      await replyAndStore(client, from, texts.humanPhone, message.id);
+      await replyAndStore(client, from, `*Contacto Humano - Paso 2/4*\n\n${texts.humanPhone}`, message.id);
       break;
     case 'HUMAN_PHONE':
       if (!/^\+?\d[\d\s-]{6,}$/.test(text)) {
@@ -276,7 +278,7 @@ export async function handleHumanContactFlow(client: Client, message: Message, s
       }
       state.data.phone = text;
       state.step = 'HUMAN_TOPIC';
-      await replyAndStore(client, from, texts.humanTopic, message.id);
+      await replyAndStore(client, from, `*Contacto Humano - Paso 3/4*\n\n${texts.humanTopic}`, message.id);
       break;
     case 'HUMAN_TOPIC':
       if (!hasEnoughLetters(text, 4)) {
@@ -285,7 +287,7 @@ export async function handleHumanContactFlow(client: Client, message: Message, s
       }
       state.data.topic = text;
       state.step = 'HUMAN_MESSAGE';
-      await replyAndStore(client, from, texts.humanMessage, message.id);
+      await replyAndStore(client, from, `*Contacto Humano - Paso 4/4*\n\n${texts.humanMessage}`, message.id);
       break;
     case 'HUMAN_MESSAGE':
       if (tokenize(text).length < 2) {
@@ -293,100 +295,142 @@ export async function handleHumanContactFlow(client: Client, message: Message, s
         break;
       }
       state.data.message = text;
-      try {
-        const response = await fetch('http://admin:8080/api/human-contacts', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            citizen_name: state.data.citizen_name || null,
-            phone: state.data.phone,
-            topic: state.data.topic || null,
-            message: state.data.message,
-            preferred_channel: 'WhatsApp',
-          }),
-        });
-        const result = (await response.json()) as any;
-        if (!result.success) {
-          console.error('[HUMAN] Failed to save human contact via API:', result);
+      state.step = 'HUMAN_CONFIRM';
+      const summary = `${texts.confirmSummary}\n\n• *Nombre:* ${state.data.citizen_name || 'Sin nombre'}\n• *Teléfono:* ${state.data.phone}\n• *Tema:* ${state.data.topic}\n• *Mensaje:* ${state.data.message}\n\n${texts.confirmPrompt}`;
+      await replyAndStore(client, from, summary, message.id);
+      break;
+    case 'HUMAN_CONFIRM':
+      if (normalized === 'si' || normalized === 'sí' || normalized === 'yes') {
+        try {
+          const response = await fetch('http://admin:8080/api/human-contacts', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              citizen_name: state.data.citizen_name || null,
+              phone: state.data.phone,
+              topic: state.data.topic || null,
+              message: state.data.message,
+              preferred_channel: 'WhatsApp',
+            }),
+          });
+          const result = (await response.json()) as any;
+          if (!result.success) {
+            console.error('[HUMAN] Failed to save human contact via API:', result);
+          }
+        } catch (e) {
+          console.error('[HUMAN] Error calling Laravel API for human contact:', e);
         }
-      } catch (e) {
-        console.error('[HUMAN] Error calling Laravel API for human contact:', e);
+        state.step = 'IDLE';
+        state.data = {};
+
+        const isAvailable = await isAnyHumanAvailableNow();
+        const availabilityNote = isAvailable
+          ? await setting('human_available_message', '_Un orientador está de turno. Le contactaremos pronto._')
+          : await setting('human_unavailable_message', '_Fuera de horario. Le contactaremos al próximo turno._');
+
+        await replyAndStore(
+          client,
+          from,
+          `${texts.humanSaved}\n\n${availabilityNote}`,
+          message.id,
+        );
+        await replyAndStore(client, from, texts.menu, message.id);
+      } else if (normalized === 'no') {
+        state.step = 'IDLE';
+        state.data = {};
+        await replyAndStore(client, from, texts.cancelHint, message.id);
+        await replyAndStore(client, from, texts.menu, message.id);
+      } else {
+        await replyAndStore(client, from, texts.confirmPrompt, message.id);
       }
-      state.step = 'IDLE';
-      state.data = {};
-
-      const isAvailable = await isAnyHumanAvailableNow();
-      const availabilityNote = isAvailable
-        ? await setting('human_available_message', '_Un orientador está de turno. Le contactaremos pronto._')
-        : await setting('human_unavailable_message', '_Fuera de horario. Le contactaremos al próximo turno._');
-
-      await replyAndStore(
-        client,
-        from,
-        `${texts.humanSaved}\n\n${availabilityNote}`,
-        message.id,
-      );
       break;
   }
 }
 
 export async function handleRegistrationFlow(client: Client, message: Message, state: UserState, texts: BotTexts) {
   const text = message.body.trim();
+  const normalized = normalize(text);
   const from = message.from;
 
   switch (state.step) {
+    case 'REQ_CONSENT':
+      if (['aceptar', 'si', 'acepto'].includes(normalized)) {
+        state.step = 'REQ_REP_NAME';
+        await replyAndStore(client, from, `*Registro - Paso 1/6*\n\n${texts.reqRepName}`, message.id);
+      } else {
+        state.step = 'IDLE';
+        state.data = {};
+        await replyAndStore(client, from, texts.cancelHint, message.id);
+        await replyAndStore(client, from, texts.menu, message.id);
+      }
+      break;
     case 'REQ_REP_NAME':
       state.data.representative_name = text;
       state.step = 'REQ_REP_DNI';
-      await replyAndStore(client, from, texts.reqRepDni, message.id);
+      await replyAndStore(client, from, `*Registro - Paso 2/6*\n\n${texts.reqRepDni}`, message.id);
       break;
     case 'REQ_REP_DNI':
       state.data.representative_dni = text;
       state.step = 'REQ_INST_NAME';
-      await replyAndStore(client, from, texts.reqInstName, message.id);
+      await replyAndStore(client, from, `*Registro - Paso 3/6*\n\n${texts.reqInstName}`, message.id);
       break;
     case 'REQ_INST_NAME':
       state.data.institution_name = text;
       state.step = 'REQ_INST_TYPE';
-      await replyAndStore(client, from, texts.reqInstType, message.id);
+      await replyAndStore(client, from, `*Registro - Paso 4/6*\n\n${texts.reqInstType}`, message.id);
       break;
     case 'REQ_INST_TYPE':
       state.data.institution_type = text;
       state.step = 'REQ_LOCATION';
-      await replyAndStore(client, from, texts.reqLocation, message.id);
+      await replyAndStore(client, from, `*Registro - Paso 5/6*\n\n${texts.reqLocation}`, message.id);
       break;
     case 'REQ_LOCATION':
       state.data.location = text;
       state.step = 'REQ_DESC';
-      await replyAndStore(client, from, texts.reqDesc, message.id);
+      await replyAndStore(client, from, `*Registro - Paso 6/6*\n\n${texts.reqDesc}`, message.id);
       break;
     case 'REQ_DESC':
       state.data.description = text;
-      try {
-        const response = await fetch('http://admin:8080/api/requests', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            representative_name: state.data.representative_name,
-            representative_dni: state.data.representative_dni,
-            institution_name: state.data.institution_name,
-            institution_type: state.data.institution_type,
-            location: state.data.location,
-            description: state.data.description,
-          }),
-        });
-        const result = (await response.json()) as any;
-        if (result.success) {
-          await replyAndStore(client, from, texts.reqSaved.replace('{ticket}', result.ticket_id), message.id);
-        } else {
+      state.step = 'REQ_CONFIRM';
+      const summary = `${texts.confirmSummary}\n\n• *Representante:* ${state.data.representative_name}\n• *DNI:* ${state.data.representative_dni}\n• *Institución:* ${state.data.institution_name}\n• *Tipo:* ${state.data.institution_type}\n• *Ubicación:* ${state.data.location}\n• *Problema:* ${state.data.description}\n\n${texts.confirmPrompt}`;
+      await replyAndStore(client, from, summary, message.id);
+      break;
+    case 'REQ_CONFIRM':
+      if (normalized === 'si' || normalized === 'sí' || normalized === 'yes') {
+        try {
+          const response = await fetch('http://admin:8080/api/requests', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              representative_name: state.data.representative_name,
+              representative_dni: state.data.representative_dni,
+              institution_name: state.data.institution_name,
+              institution_type: state.data.institution_type,
+              location: state.data.location,
+              description: state.data.description,
+            }),
+          });
+          const result = (await response.json()) as any;
+          if (result.success) {
+            await replyAndStore(client, from, texts.reqSaved.replace('{ticket}', result.ticket_id), message.id);
+          } else {
+            await replyAndStore(client, from, texts.error, message.id);
+          }
+        } catch (e) {
+          console.error('[REG] Error calling Laravel API:', e);
           await replyAndStore(client, from, texts.error, message.id);
         }
-      } catch (e) {
-        console.error('[REG] Error calling Laravel API:', e);
-        await replyAndStore(client, from, texts.error, message.id);
+        state.step = 'IDLE';
+        state.data = {};
+        await replyAndStore(client, from, texts.menu, message.id);
+      } else if (normalized === 'no') {
+        state.step = 'IDLE';
+        state.data = {};
+        await replyAndStore(client, from, texts.cancelHint, message.id);
+        await replyAndStore(client, from, texts.menu, message.id);
+      } else {
+        await replyAndStore(client, from, texts.confirmPrompt, message.id);
       }
-      state.step = 'IDLE';
-      state.data = {};
       break;
   }
 }
@@ -403,12 +447,15 @@ export async function handleTrackingFlow(client: Client, message: Message, state
         const data = result.data;
         const msg = `${texts.trackingStatusTitle}\n\nTicket: \`\`\`${data.ticket_id}\`\`\`\n${texts.trackingInstitution}: ${data.institution_name}\n${texts.trackingStatus}: *${data.status}*\n${texts.trackingDate}: ${new Date(data.created_at).toLocaleDateString('es-PE')}`;
         await replyAndStore(client, from, msg, message.id);
+        await replyAndStore(client, from, texts.menu, message.id);
       } else {
         await replyAndStore(client, from, texts.trackNotFound, message.id);
+        await replyAndStore(client, from, texts.menu, message.id);
       }
     } catch (e) {
       console.error('[TRACK] Error calling Laravel API:', e);
       await replyAndStore(client, from, texts.error, message.id);
+      await replyAndStore(client, from, texts.menu, message.id);
     }
     state.step = 'IDLE';
     state.data = {};

@@ -76,6 +76,15 @@ export async function onMessage(client: Client, message: Message) {
       return;
     }
 
+    if (['cancelar', 'salir', 'detener'].includes(normalized) && state.step !== 'IDLE') {
+      state.step = 'IDLE';
+      state.data = {};
+      const texts = await loadTexts(state.lang || 'es');
+      await replyAndStore(client, from, texts.cancelHint, message.id);
+      await replyAndStore(client, from, texts.menu, message.id);
+      return;
+    }
+
     if (['hola', 'inicio'].includes(normalized)) {
       if (!state.lang) {
         state.step = 'LANG_SELECTION';
@@ -87,10 +96,12 @@ export async function onMessage(client: Client, message: Message) {
       const texts = await loadTexts(state.lang);
       state.step = 'IDLE';
       state.data = {};
+      
+      const greeting = state.lastIntent && state.lastIntent !== 'general' ? '¡Hola de nuevo! 😊 Seguimos con su consulta.' : '¡Hola! Bienvenido de nuevo. 😊';
       await replyAndStore(
         client,
         from,
-        `Seguimos con su consulta.\n\n${texts.menu}`,
+        `${greeting}\n\n${texts.menu}`,
         message.id,
       );
       return;
@@ -187,10 +198,10 @@ export async function onMessage(client: Client, message: Message) {
         await replyAndStore(client, from, texts.needPrompt, message.id);
         break;
       case '2':
-        state.step = 'REQ_REP_NAME';
+        state.step = 'REQ_CONSENT';
         state.data = {};
         state.lastIntent = 'request';
-        await replyAndStore(client, from, texts.reqRepName, message.id);
+        await replyAndStore(client, from, texts.reqConsent, message.id);
         break;
       case '3':
         state.step = 'INFO_MENU';
@@ -201,13 +212,13 @@ export async function onMessage(client: Client, message: Message) {
         state.step = 'TRACK_TICKET';
         state.data = {};
         state.lastIntent = 'tracking';
-        await replyAndStore(client, from, texts.trackPrompt, message.id);
+        await replyAndStore(client, from, `*Seguimiento*\n\n${texts.trackPrompt}`, message.id);
         break;
       case '5':
         state.step = 'HUMAN_NAME';
         state.data = {};
         state.lastIntent = 'human';
-        await replyAndStore(client, from, texts.humanName, message.id);
+        await replyAndStore(client, from, `*Contacto Humano - Paso 1/4*\n\n${texts.humanName}`, message.id);
         break;
       default:
         await replyKnowledgeSearchOrFallback(client, message, text, texts, state.lang || 'es', history);

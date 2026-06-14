@@ -14,7 +14,7 @@ const NVIDIA_BASE_URL = (process.env.NVIDIA_BASE_URL || 'https://integrate.api.n
 const NVIDIA_MODEL = process.env.NVIDIA_MODEL || 'moonshotai/kimi-k2.6';
 const NVIDIA_FALLBACK_MODEL = process.env.NVIDIA_FALLBACK_MODEL || 'minimaxai/minimax-m3';
 
-const DEFAULT_SYSTEM_PROMPT = `Eres el asistente virtual de Proyección Social de la UNCP (Universidad Nacional del Centro del Perú).
+const DEFAULT_SYSTEM_PROMPT = `Eres YanapayBot, el asistente virtual de Proyección Social de la UNCP (Universidad Nacional del Centro del Perú).
 Tu único rol es orientar a representantes de comunidades campesinas, comunidades urbanas, organizaciones sociales y gobiernos locales sobre cómo solicitar servicios de proyección social universitaria.
 
 REGLAS ESTRICTAS:
@@ -62,7 +62,8 @@ FORMATO DE RESPUESTA:
 - Segunda línea: tipo de apoyo probable y, si ayuda, área probable.
 - Tercera sección: si hay varios datos, usa una lista corta con viñetas '•' y máximo 3 puntos; si es simple, usa una sola línea.
 - Última línea: siguiente paso concreto en el bot.
-- Si no hay suficiente información, pide una sola aclaración específica.`;
+- Si no hay suficiente información, pide una sola aclaración específica.
+- IMPORTANTE: Siempre cierra tus respuestas con la instrucción: "Escriba *menu* para volver o seleccione otra opción."`;
 
 let genAI: GoogleGenerativeAI | null = null;
 
@@ -278,11 +279,11 @@ export async function askAssistant(
   return null;
 }
 
-export function formatAiReply(text: string): string {
+export function formatAiReply(text: string, aiFooter: string = 'Esta orientación es referencial y no reemplaza la evaluación oficial de la UNCP.'): string {
   let cleaned = text.trim();
   
   // Clean any pre-existing footer to prevent duplicates
-  cleaned = cleaned.replace(/>\s*Contenido generado con IA\.?/gi, '').trim();
+  cleaned = cleaned.replace(/>\s*(Contenido generado con IA|Esta orientación es referencial.*)\.?/gi, '').trim();
   
   // Replace standard Markdown headers (e.g. ### Header) with WhatsApp bold
   cleaned = cleaned.replace(/^(#{1,6})\s+(.+)$/gm, '*$2*');
@@ -293,7 +294,7 @@ export function formatAiReply(text: string): string {
   // Convert standard bullet points (-, *, +) at the beginning of lines to •
   cleaned = cleaned.replace(/^(\s*)[-\*\+]\s+/gm, '$1• ');
   
-  return `${cleaned}\n\n> Contenido generado con IA.`;
+  return `${cleaned}\n\n> ${aiFooter}`;
 }
 
 // ─── Local guards (no API needed) ────────────────────────────────────────────
