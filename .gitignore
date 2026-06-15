@@ -20,6 +20,7 @@ admin-panel/.env.*
 
 # Project specific
 documentos/
+docs/
 .node-persist/
 _IGNORE_*/
 dashboard_logs.txt
