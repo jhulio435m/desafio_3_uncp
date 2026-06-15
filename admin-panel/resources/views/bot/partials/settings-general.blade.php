@@ -1,6 +1,6 @@
 <div x-show="activeTab === 'general'" x-cloak class="grid gap-3 xl:grid-cols-5" x-transition>
                 <div class="space-y-4 xl:col-span-3">
-                    <section class="rounded-2xl border border-gray-200 bg-white p-3 shadow-sm dark:border-slate-700 dark:bg-slate-800">
+                    <section class="rounded-2xl border border-gray-200 bg-white p-3 shadow-sm dark:border-gray-200 dark:bg-white">
                         <div class="mb-2 flex items-center justify-between">
                             <div>
                                 <h3 class="text-sm font-semibold text-gray-900 dark:text-gray-100">Comportamiento del bot</h3>
@@ -10,7 +10,7 @@
 
                         <div class="grid gap-3 md:grid-cols-2">
                             @if ($aiModeSetting)
-                                <form method="POST" action="{{ route('bot.settings.update', $aiModeSetting) }}" class="rounded-xl border border-gray-200 bg-gray-50 p-3 dark:border-slate-700 dark:bg-slate-900/50" @submit.prevent="submitForm">
+                                <form method="POST" action="{{ route('bot.settings.update', $aiModeSetting) }}" class="rounded-xl border border-gray-200 bg-gray-50 p-3 dark:border-gray-200 dark:bg-gray-100/50" @submit.prevent="submitForm">
                                     @csrf
                                     @method('PATCH')
                                     <div class="mb-2">
@@ -19,7 +19,7 @@
                                     </div>
                                     <label class="mb-2 block text-[11px] font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Estado</label>
                                     <div class="flex gap-2">
-                                        <select name="value" class="min-w-0 flex-1 rounded-xl border-gray-300 bg-white text-sm shadow-sm focus:border-emerald-500 focus:ring-emerald-500 dark:border-slate-600 dark:bg-slate-800 dark:text-gray-100">
+                                        <select name="value" class="min-w-0 flex-1 rounded-xl border-gray-300 bg-white text-sm shadow-sm focus:border-emerald-500 focus:ring-emerald-500 dark:border-gray-300 dark:bg-white dark:text-gray-100">
                                             <option value="activa" {{ $aiModeSetting->value === 'activa' ? 'selected' : '' }}>IA activa</option>
                                             <option value="off" {{ $aiModeSetting->value === 'off' ? 'selected' : '' }}>Respuestas estáticas</option>
                                         </select>
@@ -29,7 +29,7 @@
                             @endif
 
                             @if ($availableSetting)
-                                <form method="POST" action="{{ route('bot.settings.update', $availableSetting) }}" class="rounded-xl border border-gray-200 bg-gray-50 p-3 dark:border-slate-700 dark:bg-slate-900/50" @submit.prevent="submitForm">
+                                <form method="POST" action="{{ route('bot.settings.update', $availableSetting) }}" class="rounded-xl border border-gray-200 bg-gray-50 p-3 dark:border-gray-200 dark:bg-gray-100/50" @submit.prevent="submitForm">
                                     @csrf
                                     @method('PATCH')
                                     <div class="mb-2">
@@ -37,7 +37,7 @@
                                         <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ $availableSetting->description }}</p>
                                     </div>
                                     <label class="mb-2 block text-[11px] font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Texto</label>
-                                    <textarea name="value" rows="2" class="w-full rounded-xl border-gray-300 bg-white text-sm shadow-sm focus:border-emerald-500 focus:ring-emerald-500 dark:border-slate-600 dark:bg-slate-800 dark:text-gray-100" required @input="markDirty">{{ $availableSetting->value }}</textarea>
+                                    <textarea name="value" rows="2" class="w-full rounded-xl border-gray-300 bg-white text-sm shadow-sm focus:border-emerald-500 focus:ring-emerald-500 dark:border-gray-300 dark:bg-white dark:text-gray-100" required @input="markDirty">{{ $availableSetting->value }}</textarea>
                                     <div class="mt-2 flex justify-end">
                                         <button type="submit" class="inline-flex items-center justify-center rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700">Guardar</button>
                                     </div>
@@ -45,7 +45,7 @@
                             @endif
 
                             @if ($unavailableSetting)
-                                <form method="POST" action="{{ route('bot.settings.update', $unavailableSetting) }}" class="rounded-xl border border-gray-200 bg-gray-50 p-3 dark:border-slate-700 dark:bg-slate-900/50" @submit.prevent="submitForm">
+                                <form method="POST" action="{{ route('bot.settings.update', $unavailableSetting) }}" class="rounded-xl border border-gray-200 bg-gray-50 p-3 dark:border-gray-200 dark:bg-gray-100/50" @submit.prevent="submitForm">
                                     @csrf
                                     @method('PATCH')
                                     <div class="mb-2">
@@ -53,7 +53,7 @@
                                         <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ $unavailableSetting->description }}</p>
                                     </div>
                                     <label class="mb-2 block text-[11px] font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Texto</label>
-                                    <textarea name="value" rows="2" class="w-full rounded-xl border-gray-300 bg-white text-sm shadow-sm focus:border-emerald-500 focus:ring-emerald-500 dark:border-slate-600 dark:bg-slate-800 dark:text-gray-100" required @input="markDirty">{{ $unavailableSetting->value }}</textarea>
+                                    <textarea name="value" rows="2" class="w-full rounded-xl border-gray-300 bg-white text-sm shadow-sm focus:border-emerald-500 focus:ring-emerald-500 dark:border-gray-300 dark:bg-white dark:text-gray-100" required @input="markDirty">{{ $unavailableSetting->value }}</textarea>
                                     <div class="mt-2 flex justify-end">
                                         <button type="submit" class="inline-flex items-center justify-center rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700">Guardar</button>
                                     </div>
@@ -62,7 +62,7 @@
                         </div>
                     </section>
 
-                    <section class="rounded-2xl border border-gray-200 bg-white p-3 shadow-sm dark:border-slate-700 dark:bg-slate-800">
+                    <section class="rounded-2xl border border-gray-200 bg-white p-3 shadow-sm dark:border-gray-200 dark:bg-white">
                         <div class="mb-2">
                             <h3 class="text-sm font-semibold text-gray-900 dark:text-gray-100">Mensajes operativos</h3>
                             <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Textos visibles del flujo, el alcance y los avisos del canal.</p>
@@ -82,7 +82,7 @@
                                 $referencePdfFailedSetting,
                             ] as $settingItem)
                                 @if ($settingItem)
-                                    <form method="POST" action="{{ route('bot.settings.update', $settingItem) }}" class="rounded-xl border border-gray-200 bg-gray-50 p-3 dark:border-slate-700 dark:bg-slate-900/50" @submit.prevent="submitForm">
+                                    <form method="POST" action="{{ route('bot.settings.update', $settingItem) }}" class="rounded-xl border border-gray-200 bg-gray-50 p-3 dark:border-gray-200 dark:bg-gray-100/50" @submit.prevent="submitForm">
                                         @csrf
                                         @method('PATCH')
                                         <div class="mb-2">
@@ -90,7 +90,7 @@
                                             <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ $settingItem->description }}</p>
                                         </div>
                                         <label class="mb-2 block text-[11px] font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Texto</label>
-                                        <textarea name="value" rows="4" class="w-full rounded-xl border-gray-300 bg-white text-sm shadow-sm focus:border-emerald-500 focus:ring-emerald-500 dark:border-slate-600 dark:bg-slate-800 dark:text-gray-100" required @input="markDirty">{{ $settingItem->value }}</textarea>
+                                        <textarea name="value" rows="4" class="w-full rounded-xl border-gray-300 bg-white text-sm shadow-sm focus:border-emerald-500 focus:ring-emerald-500 dark:border-gray-300 dark:bg-white dark:text-gray-100" required @input="markDirty">{{ $settingItem->value }}</textarea>
                                         <div class="mt-2 flex justify-end">
                                             <button type="submit" class="inline-flex items-center justify-center rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700">Guardar</button>
                                         </div>
@@ -101,7 +101,7 @@
                     </section>
 
                     @if ($promptSetting)
-                        <section class="rounded-2xl border border-gray-200 bg-white p-3 shadow-sm dark:border-slate-700 dark:bg-slate-800">
+                        <section class="rounded-2xl border border-gray-200 bg-white p-3 shadow-sm dark:border-gray-200 dark:bg-white">
                             <div class="mb-2 flex items-start justify-between gap-3">
                                 <div>
                                     <h3 class="text-sm font-semibold text-gray-900 dark:text-gray-100">Prompt del sistema</h3>
@@ -111,7 +111,7 @@
                             <form method="POST" action="{{ route('bot.settings.update', $promptSetting) }}" class="space-y-3" @submit.prevent="submitForm">
                                 @csrf
                                 @method('PATCH')
-                                <textarea name="value" rows="8" class="w-full rounded-2xl border-gray-300 bg-slate-50 font-mono text-xs leading-6 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 dark:border-slate-600 dark:bg-slate-900 dark:text-gray-100" required @input="markDirty">{{ $promptSetting->value }}</textarea>
+                                <textarea name="value" rows="8" class="w-full rounded-2xl border-gray-300 bg-slate-50 font-mono text-xs leading-6 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 dark:border-gray-300 dark:bg-gray-100/50 dark:text-gray-100" required @input="markDirty">{{ $promptSetting->value }}</textarea>
                                 <div class="flex items-center justify-between gap-3">
                                     <p class="text-[11px] text-gray-500 dark:text-gray-400">Aquí se controla el tono, idioma y límites de respuesta del bot.</p>
                                     <button type="submit" class="inline-flex items-center justify-center rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700">Guardar prompt</button>
@@ -122,13 +122,13 @@
                 </div>
 
                 <div class="space-y-4 xl:col-span-2">
-                    <section class="rounded-2xl border border-gray-200 bg-white p-3 shadow-sm dark:border-slate-700 dark:bg-slate-800">
+                    <section class="rounded-2xl border border-gray-200 bg-white p-3 shadow-sm dark:border-gray-200 dark:bg-white">
                         <div class="mb-2">
                             <h3 class="text-sm font-semibold text-gray-900 dark:text-gray-100">Categorías de conocimiento</h3>
                             <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Agrupa FAQs, enlaces y temas del bot para mantener ordenado el contenido.</p>
                         </div>
 
-                        <form method="POST" :action="categoryForm.id ? '{{ url('knowledge-categories') }}/' + categoryForm.id : '{{ route('bot.categories.store') }}'" class="space-y-3 rounded-xl border border-gray-200 bg-gray-50 p-3 dark:border-slate-700 dark:bg-slate-900/50" @submit.prevent="submitForm">
+                        <form method="POST" :action="categoryForm.id ? '{{ url('knowledge-categories') }}/' + categoryForm.id : '{{ route('bot.categories.store') }}'" class="space-y-3 rounded-xl border border-gray-200 bg-gray-50 p-3 dark:border-gray-200 dark:bg-gray-100/50" @submit.prevent="submitForm">
                             @csrf
                             <template x-if="categoryForm.id">
                                 <input type="hidden" name="_method" value="PATCH">
@@ -140,11 +140,11 @@
                             <div class="grid gap-3">
                                 <div>
                                     <label class="mb-1 block text-[11px] font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Nombre</label>
-                                    <input name="name" x-model="categoryForm.name" placeholder="Ej. Requisitos, Zootecnia" required class="w-full rounded-xl border-gray-300 bg-white text-sm shadow-sm focus:border-emerald-500 focus:ring-emerald-500 dark:border-slate-600 dark:bg-slate-800 dark:text-gray-100" @input="markDirty">
+                                    <input name="name" x-model="categoryForm.name" placeholder="Ej. Requisitos, Zootecnia" required class="w-full rounded-xl border-gray-300 bg-white text-sm shadow-sm focus:border-emerald-500 focus:ring-emerald-500 dark:border-gray-300 dark:bg-white dark:text-gray-100" @input="markDirty">
                                 </div>
                                 <div>
                                     <label class="mb-1 block text-[11px] font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Descripción</label>
-                                    <textarea name="description" x-model="categoryForm.description" rows="2" placeholder="Describe la categoría..." class="w-full rounded-xl border-gray-300 bg-white text-sm shadow-sm focus:border-emerald-500 focus:ring-emerald-500 dark:border-slate-600 dark:bg-slate-800 dark:text-gray-100" @input="markDirty"></textarea>
+                                    <textarea name="description" x-model="categoryForm.description" rows="2" placeholder="Describe la categoría..." class="w-full rounded-xl border-gray-300 bg-white text-sm shadow-sm focus:border-emerald-500 focus:ring-emerald-500 dark:border-gray-300 dark:bg-white dark:text-gray-100" @input="markDirty"></textarea>
                                 </div>
                                 <label class="inline-flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-200">
                                     <input name="is_active" type="checkbox" value="1" x-model="categoryForm.is_active" class="rounded border-gray-300 text-emerald-600 focus:ring-emerald-500" @input="markDirty">
@@ -157,16 +157,16 @@
                         </form>
                     </section>
 
-                    <section class="rounded-2xl border border-gray-200 bg-white p-3 shadow-sm dark:border-slate-700 dark:bg-slate-800">
+                    <section class="rounded-2xl border border-gray-200 bg-white p-3 shadow-sm dark:border-gray-200 dark:bg-white">
                         <div class="mb-2 flex items-center justify-between">
                             <div>
                                 <h3 class="text-sm font-semibold text-gray-900 dark:text-gray-100">Categorías registradas</h3>
                                 <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Estado actual de la taxonomía del bot.</p>
                             </div>
-                            <span class="rounded-full bg-gray-100 px-2.5 py-0.5 text-[11px] font-semibold text-gray-600 dark:bg-slate-900 dark:text-gray-300">{{ $categories->count() }}</span>
+                            <span class="rounded-full bg-gray-100 px-2.5 py-0.5 text-[11px] font-semibold text-gray-600 dark:bg-gray-100 dark:text-gray-300">{{ $categories->count() }}</span>
                         </div>
 
-                        <div class="max-h-[260px] divide-y divide-gray-100 overflow-y-auto rounded-xl border border-gray-100 dark:divide-slate-700 dark:border-slate-700">
+                        <div class="max-h-[260px] divide-y divide-gray-100 overflow-y-auto rounded-xl border border-gray-100 dark:divide-gray-100 dark:border-gray-200">
                             @forelse ($categories as $category)
                                 <div class="flex items-start justify-between gap-3 px-3 py-2">
                                     <div class="min-w-0">
@@ -175,10 +175,10 @@
                                     </div>
                                     
     <div class="flex items-center gap-2">
-        <span class="shrink-0 rounded-full border px-2.5 py-0.5 text-[11px] font-semibold {{ $category->is_active ? 'border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-200' : 'border-gray-200 bg-gray-100 text-gray-600 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-300' }}">
+        <span class="shrink-0 rounded-full border px-2.5 py-0.5 text-[11px] font-semibold {{ $category->is_active ? 'border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-200' : 'border-gray-200 bg-gray-100 text-gray-600 dark:border-gray-200 dark:bg-gray-100 dark:text-gray-300' }}">
                                         {{ $category->is_active ? 'Activa' : 'Inactiva' }}
                                     </span>
-        <div class="flex items-center gap-1 border-l border-gray-200 dark:border-slate-700 pl-2 ml-1">
+        <div class="flex items-center gap-1 border-l border-gray-200 dark:border-gray-200 pl-2 ml-1">
             <button type="button" @click.stop="editCategory({{ $category->id }}, '{{ addslashes($category->name) }}', '{{ addslashes($category->description) }}', {{ $category->is_active ? 'true' : 'false' }})" class="text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-500/10 p-1 rounded transition mr-1" title="Editar">
                 <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
             </button>
