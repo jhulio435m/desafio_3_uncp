@@ -155,6 +155,7 @@ export async function onMessage(client: Client, message: Message) {
     }
 
     if (state.step === 'INFO_MENU') {
+      let handled = true;
       switch (normalized) {
         case '1':
           await replyProcessServices(client, message, texts, state.lang || 'es');
@@ -174,10 +175,16 @@ export async function onMessage(client: Client, message: Message) {
         case '6':
           state.step = 'IDLE';
           await replyAndStore(client, from, texts.menu, message.id);
+          handled = false;
           break;
         default:
-          await replyAndStore(client, from, texts.infoMenu, message.id);
+          state.step = 'IDLE';
+          await replyKnowledgeSearchOrFallback(client, message, text, texts, state.lang || 'es', history);
+          handled = false;
           break;
+      }
+      if (handled) {
+        await replyAndStore(client, from, texts.infoMenu, message.id);
       }
       state.lastIntent = 'general';
       return;
