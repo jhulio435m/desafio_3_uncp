@@ -253,7 +253,7 @@ class BotTranslationsSeeder extends Seeder
                 'label' => 'Paso 1: Nombre del Representante (Humano)',
                 'description' => 'Wizard de contacto humano - solicitud de nombre.',
                 'translations' => [
-                    'es' => 'Indique el *nombre del representante* o escriba "sin nombre".\n\n_Escriba *cancelar* para salir._',
+                    'es' => "Indique el *nombre del representante* o escriba \"sin nombre\".\n\n_Escriba *cancelar* para salir._",
                     'qu' => 'Representantepa sutinta qillqay utaq "sin nombre" qillqay.',
                     'ash' => 'Indique el *nombre del representante* o escriba "sin nombre".'
                 ]
@@ -263,7 +263,7 @@ class BotTranslationsSeeder extends Seeder
                 'label' => 'Paso 2: Teléfono (Humano)',
                 'description' => 'Wizard de contacto humano - solicitud de teléfono.',
                 'translations' => [
-                    'es' => 'Indique el *teléfono o WhatsApp* de contacto.\n\n_Escriba *cancelar* para salir._',
+                    'es' => "Indique el *teléfono o WhatsApp* de contacto.\n\n_Escriba *cancelar* para salir._",
                     'qu' => 'Telefono utaq WhatsApp yupayta qillqay.',
                     'ash' => 'Indique el *teléfono o WhatsApp* de contacto.'
                 ]
@@ -273,7 +273,7 @@ class BotTranslationsSeeder extends Seeder
                 'label' => 'Paso 3: Tema/Necesidad (Humano)',
                 'description' => 'Wizard de contacto humano - solicitud de tema.',
                 'translations' => [
-                    'es' => 'Indique el *tema o necesidad* de proyección social.\n\n_Escriba *cancelar* para salir._',
+                    'es' => "Indique el *tema o necesidad* de proyección social.\n\n_Escriba *cancelar* para salir._",
                     'qu' => 'Proyección socialmanta ima necesidadtaq kachkan, chayta qillqay.',
                     'ash' => 'Indique el *tema o necesidad* de proyección social.'
                 ]
@@ -283,7 +283,7 @@ class BotTranslationsSeeder extends Seeder
                 'label' => 'Paso 4: Mensaje Adicional (Humano)',
                 'description' => 'Wizard de contacto humano - solicitud de mensaje descriptivo.',
                 'translations' => [
-                    'es' => 'Describa brevemente qué orientación necesita.\n\n_Escriba *cancelar* para salir._',
+                    'es' => "Describa brevemente qué orientación necesita.\n\n_Escriba *cancelar* para salir._",
                     'qu' => 'Ima orientaciónta munanki, pisillapi qillqay.',
                     'ash' => 'Describa brevemente qué orientación necesita.'
                 ]
@@ -298,6 +298,17 @@ class BotTranslationsSeeder extends Seeder
                     'ash' => '*Kameetsa - Registro Exitoso*\n\nSu pedido de orientación humana fue registrado como *Pendiente*. Pasonki.'
                 ]
             ],
+            'humanConsent' => [
+                'group' => 'wizard_humano',
+                'label' => 'Paso 0: Consentimiento de Privacidad (Humano)',
+                'description' => 'Solicitud de aceptación de tratamiento de datos para contacto humano.',
+                'translations' => [
+                    'es' => "*Consentimiento de Privacidad*\n\nPara que un orientador pueda contactarle, se solicitarán datos básicos de contacto. Esta información se usará únicamente para la atención personalizada.\n\nEscriba *ACEPTAR* para continuar o *CANCELAR* para salir.",
+                    'qu' => "*Datosmanta Consentimiento*\n\nRuna yanapakuqwan rimanaykipaq, datonkunata mañakusaykiku. Kay willakuykunataqa yanapanallapaqmi llamkasaiku.\n\nKutinaykipaq *ACEPTAR* qillqay utaq lluqsinaykipaq *CANCELAR* qillqay.",
+                    'ash' => "*Consentimiento de Privacidad*\n\nPara registrar su solicitud, se solicitarán datos básicos. Esta información se usará únicamente para orientar y registrar su pedido.\n\nEscriba *ACEPTAR* para continuar o *CANCELAR* para salir."
+                ]
+            ],
+
 
             // WIZARD REGISTRO
             'reqConsent' => [
