@@ -293,7 +293,7 @@ class BotTranslationsSeeder extends Seeder
                 'label' => 'Éxito: Registro Humano Exitoso',
                 'description' => 'Mensaje final de éxito tras registrar solicitud de contacto.',
                 'translations' => [
-                    'es' => '*Registro Exitoso*\n\nSu pedido de orientación humana fue registrado como *Pendiente*. Un orientador se pondrá en contacto pronto.',
+                    'es' => "*Registro Exitoso*\n\nSu pedido de orientación humana fue registrado como *Pendiente*. Un orientador se pondrá en contacto pronto.",
                     'qu' => '*Registro Exitoso*\n\nRuna yanapakuqwan rimay mañakuyniyki *Pendiente* hina qillqasqa.',
                     'ash' => '*Kameetsa - Registro Exitoso*\n\nSu pedido de orientación humana fue registrado como *Pendiente*. Pasonki.'
                 ]
@@ -326,7 +326,7 @@ class BotTranslationsSeeder extends Seeder
                 'label' => 'Paso 1: Nombre del Representante (Registro)',
                 'description' => 'Wizard de registro - solicitud de nombre.',
                 'translations' => [
-                    'es' => 'Indique su *nombre completo* (Representante).\n\n_Escriba *cancelar* para salir._',
+                    'es' => "Indique su *nombre completo* (Representante).\n\n_Escriba *cancelar* para salir._",
                     'qu' => 'Sutiykita qillqay (Representante).',
                     'ash' => 'Indique su *nombre completo* (Representante).'
                 ]
@@ -336,7 +336,7 @@ class BotTranslationsSeeder extends Seeder
                 'label' => 'Paso 2: DNI del Representante (Registro)',
                 'description' => 'Wizard de registro - solicitud de DNI.',
                 'translations' => [
-                    'es' => 'Indique su número de *DNI*.\n\n_Escriba *cancelar* para salir._',
+                    'es' => "Indique su número de *DNI*.\n\n_Escriba *cancelar* para salir._",
                     'qu' => 'DNI yupaynikita qillqay.',
                     'ash' => 'Indique su número de *DNI*.'
                 ]
@@ -346,7 +346,7 @@ class BotTranslationsSeeder extends Seeder
                 'label' => 'Paso 3: Nombre de la Institución/Comunidad',
                 'description' => 'Wizard de registro - solicitud de nombre de comunidad.',
                 'translations' => [
-                    'es' => 'Indique el *nombre de su Comunidad o Institución*.\n\n_Escriba *cancelar* para salir._',
+                    'es' => "Indique el *nombre de su Comunidad o Institución*.\n\n_Escriba *cancelar* para salir._",
                     'qu' => 'Comunidadniykipa utaq Instituciónniykipa sutinta qillqay.',
                     'ash' => 'Indique el *nombre de su Nampitsi o Institución*.'
                 ]
@@ -356,7 +356,7 @@ class BotTranslationsSeeder extends Seeder
                 'label' => 'Paso 4: Tipo de Institución',
                 'description' => 'Wizard de registro - solicitud de tipo.',
                 'translations' => [
-                    'es' => 'Indique el tipo: _Comunidad Campesina_, _Gobierno Local_ u _Organización Urbana_.\n\n_Escriba *cancelar* para salir._',
+                    'es' => "Indique el tipo: _Comunidad Campesina_, _Gobierno Local_ u _Organización Urbana_.\n\n_Escriba *cancelar* para salir._",
                     'qu' => 'Ima laya: _Comunidad Campesina_, _Gobierno Local_ utaq _Organización Urbana_.',
                     'ash' => 'Indique el tipo: _Comunidad Campesina_, _Gobierno Local_ u _Organización Urbana_.'
                 ]
@@ -366,7 +366,7 @@ class BotTranslationsSeeder extends Seeder
                 'label' => 'Paso 5: Ubicación Distrito / Anexo',
                 'description' => 'Wizard de registro - solicitud de distrito.',
                 'translations' => [
-                    'es' => 'Indique la ubicación (_Distrito o centro poblado_).\n\n_Escriba *cancelar* para salir._',
+                    'es' => "Indique la ubicación (_Distrito o centro poblado_).\n\n_Escriba *cancelar* para salir._",
                     'qu' => 'Maypiraq kachkanki (_Distrito otaq Centro Poblado_).',
                     'ash' => 'Indique la ubicación (_Distrito o centro poblado_).'
                 ]
@@ -376,7 +376,7 @@ class BotTranslationsSeeder extends Seeder
                 'label' => 'Paso 6: Descripción del Problema',
                 'description' => 'Wizard de registro - solicitud de descripción.',
                 'translations' => [
-                    'es' => 'Describa brevemente la necesidad o problema que busca resolver.\n\n_Escriba *cancelar* para salir._',
+                    'es' => "Describa brevemente la necesidad o problema que busca resolver.\n\n_Escriba *cancelar* para salir._",
                     'qu' => 'Imapaqtaq yanapayta munanki, pisillapi qillqay.',
                     'ash' => 'Describa brevemente la necesidad o problema que busca resolver.'
                 ]
