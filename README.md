@@ -18,12 +18,6 @@ Asistente virtual de WhatsApp y panel de administración para orientar sobre pro
 ### Accesos
 - **Bot QR Interface:** `http://localhost:3001`
 - **Panel Administrativo:** `http://localhost:8080` (admin@uncp.edu.pe / uncp123456)
-- **Base de datos:** Puerto 5439 (Postgres)
-
-### Documentación
-- [Manual de Usuario](MANUAL_DE_USUARIO.md)
-- [Plan de solución](plan.md)
-- [Resumen HackUNCP](documentos/RESUMEN-HACKATON-HACKUNCP.md)
-
+- **Base de datos:** Puerto 5439
 ---
 _**Nota:** Las versiones en Quechua y Asháninka de este sistema son referenciales y serán validadas con hablantes nativos antes de su uso oficial institucional._
